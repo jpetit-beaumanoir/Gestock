@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:icon="@drawable/importar_archivo"
+        android:id="@+id/boton_importar_catalogo"
+        android:title="IMPORTAR CATÁLOGO"/>
+    <item
+        android:id="@+id/stock_options"
+        android:title="STOCK">
+        <menu>
+            <item
+                android:icon="@drawable/exportar_stock"
+                android:id="@+id/boton_exportar_stock"
+                android:title="EXPORTAR STOCK"/>
+            <item
+                android:icon="@drawable/asign_stock"
+                android:id="@+id/boton_asignar_stock"
+                android:title="ASIGNACIÓN DE STOCK"/>
+        </menu>
+    </item>
+</menu>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Gestock</string>
+    <string name="ACCEDER">ACCEDER</string>
+    <string name="BG_LOGIN_DESC">Fondo blanco con un seguido de cajas solo en contorno apiladas</string>
+    <string name="CODIGO_ALMACEN_TEXTVIEW">Código almacén</string>
+    <string name="DEVELOPED">Developed by Joan Petit</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+</resources>

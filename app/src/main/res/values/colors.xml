@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colores propios de la aplicación -->
+    <color name="black">#ff000000</color>
+    <color name="white">#ffffffff</color>
+    <color name="blau_adapter">#c1ebe6</color>
+    <color name="gris_6">#4aaeadad</color>
+    <color name="verd_background">#f0f7f4</color>
+    <color name="ic_launcher_background">#ffffff</color>
+
+    <!-- Colores del tema (Theme.Gestock) -->
+    <color name="black_34">#57090909</color>
+    <color name="purple_700">#ff3700b3</color>
+    <color name="teal_200">#ff03dac5</color>
+    <color name="teal_700">#ff018786</color>
+</resources>

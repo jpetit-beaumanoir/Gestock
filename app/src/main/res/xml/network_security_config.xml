@@ -1,0 +1,9 @@
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="false">gestock.ignorelist.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="@raw/isrgrootx1" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
