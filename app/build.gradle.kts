@@ -10,8 +10,8 @@ android {
         applicationId = "com.beaumanoir.gestock"
         minSdk = 30
         targetSdk = 34
-        versionCode = 20
-        versionName = "3.1.9"
+        versionCode = 21
+        versionName = "3.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
