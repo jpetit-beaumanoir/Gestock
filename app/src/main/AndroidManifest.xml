@@ -43,9 +43,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="com.beaumanoir.gestock.data.CrearAlmacen"
-            android:windowSoftInputMode="adjustPan" />
         <activity android:name="com.beaumanoir.gestock.data.StockSearch" />
         <activity
             android:name="com.beaumanoir.gestock.data.AlmacenVirtualMainPalets"

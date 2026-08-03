@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="start"
+    android:padding="15dp"
+    android:background="@drawable/border_line_recycler">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/nombre_almacen"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+
+            android:hint="Nombre almacén"
+            android:maxLines="1"
+            android:inputType="text"
+            android:imeOptions="actionNext"
+
+            android:layout_weight="1"/>
+
+        <EditText
+            android:id="@+id/codigo_almacen"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+
+            android:hint="Codigo almacén"
+            android:maxLines="1"
+            android:inputType="number"
+            android:imeOptions="actionNext"
+
+            android:layout_weight="1"/>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/boton_eliminar_almacen"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+
+            android:layout_margin="10dp"
+
+            android:background="@drawable/border_line"
+
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:text="ELIMINAR"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/boton_crear_almacen"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+
+            android:layout_margin="10dp"
+
+            android:background="@drawable/border_line"
+
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:text="CREAR"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07"/>
+    </LinearLayout>
+
+</LinearLayout>

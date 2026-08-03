@@ -32,7 +32,7 @@ class AlmacenAdapter(
         }
 
         override fun onClick(view: View) {
-            val position = adapterPosition
+            val position = bindingAdapterPosition
             if (position != RecyclerView.NO_POSITION) {
                 listener.onItemClick(almacenVirtualList[position])
             }
@@ -47,7 +47,7 @@ class AlmacenAdapter(
 
     override fun onBindViewHolder(holder: AlmacenViewHolder, position: Int) {
         val almacen = almacenVirtualList[position]
-        holder.nombreAlmacenTextView.text = almacen.nombre
+        holder.nombreAlmacenTextView.text = almacen.nombre.uppercase()
         holder.codigoAlmacenTextView.text = almacen.codigo.toString()
         holder.paletsAlmacenTextView.text = almacen.palets.toString()
         holder.cajasAlmacenTextView.text = almacen.cajas.toString()

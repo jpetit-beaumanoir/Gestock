@@ -73,31 +73,6 @@ object RetrofitClient {
         }
     }
 
-    /*
-    private fun getRetrofit(context: Context): Retrofit {
-        val sslContextPair = getSslContext(context)
-
-        val sslContext = sslContextPair.component1()
-        val trustManager = sslContextPair.component2()
-
-        val socketFactory = sslContext.socketFactory
-
-        val okHttpClient = OkHttpClient.Builder()
-            .sslSocketFactory(socketFactory, trustManager)
-            .addInterceptor(ApiKeyInterceptor())
-            .writeTimeout(90L, TimeUnit.SECONDS)
-            .readTimeout(90L, TimeUnit.SECONDS)
-            .connectTimeout(90L, TimeUnit.SECONDS)
-            .build()
-
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-     */
-
     private fun getRetrofit(context: Context): Retrofit {
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(ApiKeyInterceptor())
