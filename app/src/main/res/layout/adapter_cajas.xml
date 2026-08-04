@@ -1,77 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/border_line_producte"
     android:layout_width="match_parent"
-    android:layout_height="70dp"
-    android:layout_marginTop="1dp">
-    <TextView
-        android:textSize="30dp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:id="@+id/id_caja"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="1"
-        android:fontFamily="@font/abhaya_libre"
-        android:layout_marginStart="15dp"
-        android:letterSpacing="0.07"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-    <ImageView
-        android:id="@+id/caixa_icon_virtual"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:src="@drawable/caja_icon"
-        android:layout_marginStart="5dp"
-        app:layout_constraintBottom_toBottomOf="@+id/id_caja"
-        app:layout_constraintStart_toEndOf="@+id/id_caja"
-        app:layout_constraintTop_toTopOf="@+id/id_caja"/>
-    <TextView
-        android:textSize="20dp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:id="@+id/textview_temporada"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TEMPORADA"
-        android:fontFamily="@font/abhaya_libre"
-        android:layout_marginStart="20dp"
-        android:letterSpacing="0.07"
-        app:layout_constraintStart_toEndOf="@+id/caixa_icon_virtual"
-        app:layout_constraintTop_toTopOf="parent"/>
-    <TextView
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:id="@+id/textview_descripcion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="DESCRIPCIÓN"
-        android:fontFamily="@font/abhaya_libre"
-        android:letterSpacing="0.07"
-        app:layout_constraintStart_toStartOf="@+id/textview_temporada"
-        app:layout_constraintTop_toBottomOf="@+id/textview_temporada"/>
-    <TextView
-        android:textSize="30sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:id="@+id/cantidadTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="12"
-        android:fontFamily="@font/abhaya_libre"
-        android:letterSpacing="0.07"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/productos_icon_virtual"
-        app:layout_constraintTop_toTopOf="parent"/>
-    <ImageView
-        android:id="@+id/productos_icon_virtual"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:src="@drawable/stock_icon"
-        android:layout_marginEnd="5dp"
-        app:layout_constraintBottom_toBottomOf="@+id/cantidadTextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/cantidadTextView"/>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/id_caja"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:layout_marginEnd="5dp"
+
+            android:text="1"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07"/>
+
+        <ImageView
+            android:id="@+id/caixa_icon_virtual"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/caja_icon"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="2"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/textview_temporada"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="TEMPORADA"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07"/>
+
+        <TextView
+            android:id="@+id/textview_descripcion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="DESCRIPCIÓN"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07"/>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/cantidadTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="12"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07" />
+
+        <ImageView
+            android:id="@+id/productos_icon_virtual"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+
+            android:src="@drawable/stock_icon"/>
+
+    </LinearLayout>
+
+
+</LinearLayout>

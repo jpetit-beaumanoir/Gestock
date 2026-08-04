@@ -100,6 +100,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
                 createAlmacenesAPI(nombreAlmacenCrear, codigoAlmacenCrear,object : APIResponseCallback {
                     override fun onSuccess(response: String) {
                         Toast.makeText(this@LogIn, response, Toast.LENGTH_LONG).show()
+                        dialog.dismiss()
                         onItemClick(
                             Almacenes(codigoAlmacenCrear, nombreAlmacenCrear.uppercase(Locale.ROOT), 0, 0, 0)
                         )
@@ -129,6 +130,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
                     override fun onSuccess(response: String) {
                         Toast.makeText(this@LogIn, response, Toast.LENGTH_LONG).show()
                         getAlmacenesAPI()
+                        dialog.dismiss()
                     }
 
                     override fun onError(errorMessage: String) {
@@ -141,9 +143,6 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
             dialog.show()
 
             dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
-            MODIOFICAR EL ALERT D AFEGIR O ELIMINAR ALMACENES PERQUE SURTI DE MANERA CORRECTA VISUALMENT
-            FER MES PETIT EL ICONO DE AJUSTES PER QUE QUEDI MILLOR
 
         }
 
@@ -186,6 +185,8 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
 
             override fun onFailure(call: Call<AlmacenResponse>, t: Throwable) {
                 val message = t.message?.lowercase(Locale.ROOT)
+                Log.d("ERROR CONEXION SERVIDOR", message.toString())
+
                 if (message != null && message.contains("unable to resolve host")) {
                     Toast.makeText(this@LogIn, "No tienes conexión a internet", Toast.LENGTH_LONG).show()
                 } else {
@@ -201,7 +202,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
         if (RetrofitClient.isConnectedToInternet(this)) {
             login(object : LoginCallback {
                 override fun onLoginSuccess(nombre: String) {
-                    val intent = Intent(this@LogIn, StockSearch::class.java)
+                    val intent = Intent(this@LogIn, AlmacenVirtualMainPalets::class.java)
                     intent.putExtra("codigo_almacen", codigoAlmacen)
                     intent.putExtra("nombre_almacen", nombre)
                     startActivity(intent)

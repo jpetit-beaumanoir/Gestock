@@ -1,96 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/border_line_producte"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+
     android:focusable="false"
     android:clickable="false"
-    android:layout_width="match_parent"
-    android:layout_height="80dp"
-    android:layout_marginTop="1dp">
-    <TextView
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:id="@+id/nombre_producto"
-        android:focusable="false"
-        android:clickable="false"
-        android:layout_width="wrap_content"
+    android:background="@drawable/border_line_producte"
+    android:orientation="horizontal"
+    android:gravity="center_vertical">
+
+    PASAR A LINEARS LAYOUTS, FER-HO IGUAL QUE APAREIX EN LA PDA.
+
+    -- NO REFRESCAR LA APP DEL ANDROID STUDIO --
+
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="NOMBRE"
-        android:fontFamily="@font/abhaya_libre"
-        android:letterSpacing="0.07"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/nombre_producto"
+            android:focusable="false"
+            android:clickable="false"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:text="NOMBRE"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07" />
+
+        <TextView
+            android:id="@+id/color_producto"
+            android:focusable="false"
+            android:clickable="false"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:text="COLOR"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07"/>
+
+        <TextView
+            android:id="@+id/ean_producto"
+            android:focusable="false"
+            android:clickable="false"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:text="1234567890123"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/temporada_producto"
+            android:focusable="false"
+            android:clickable="false"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:text="TEMP"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07"/>
+
+        <TextView
+            android:id="@+id/talla_producto"
+            android:focusable="false"
+            android:clickable="false"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:text="TALLA"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07"/>
+
+    </LinearLayout>
+
+
     <TextView
-        android:textSize="15sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:id="@+id/color_producto"
-        android:focusable="false"
-        android:clickable="false"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="COLOR"
-        android:fontFamily="@font/abhaya_libre"
-        android:letterSpacing="0.07"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/nombre_producto"/>
-    <TextView
-        android:textSize="15sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:id="@+id/ean_producto"
-        android:focusable="false"
-        android:clickable="false"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="1234567890123"
-        android:fontFamily="@font/abhaya_libre"
-        android:letterSpacing="0.07"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
-    <TextView
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:id="@+id/temporada_producto"
-        android:focusable="false"
-        android:clickable="false"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TEMP"
-        android:fontFamily="@font/abhaya_libre"
-        android:letterSpacing="0.07"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/ean_producto"
-        app:layout_constraintTop_toTopOf="parent"/>
-    <TextView
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:id="@+id/talla_producto"
-        android:focusable="false"
-        android:clickable="false"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TALLA"
-        android:fontFamily="@font/abhaya_libre"
-        android:letterSpacing="0.07"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/temporada_producto"/>
-    <TextView
-        android:textSize="25sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
         android:id="@+id/cantidad_producto"
         android:focusable="false"
         android:clickable="false"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+
+        android:gravity="center_vertical"
+
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
         android:text="1"
         android:fontFamily="@font/abhaya_libre"
         android:layout_marginEnd="10dp"
-        android:letterSpacing="0.07"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:letterSpacing="0.07"/>
+</LinearLayout>

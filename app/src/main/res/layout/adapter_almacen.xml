@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/border_line_producte"
+    android:background="@drawable/border_line_almacen"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
 
-            android:gravity="end"
+            android:gravity="center"
             android:layout_marginEnd="5dp"
 
             android:textSize="27sp"
@@ -32,15 +32,15 @@
             android:id="@+id/nombre_almacen_adapter"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="2"
 
-            android:gravity="start"
+            android:gravity="center"
             android:layout_marginStart="5dp"
 
             android:textSize="25sp"
             android:textStyle="bold"
             android:textColor="@color/black"
-            android:text="nombre"
+            android:text="NOMBRE"
             android:fontFamily="@font/abhaya_libre"
             android:letterSpacing="0.07"/>
 
@@ -60,42 +60,48 @@
             android:gravity="center">
 
             <TextView
+                android:id="@+id/palet_almacen_adapter"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+
+                android:layout_weight="2"
+                android:gravity="end"
+
+                android:text="125"
                 android:textSize="27sp"
                 android:textStyle="bold"
                 android:textColor="@color/black"
-                android:id="@+id/palet_almacen_adapter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="125"
                 android:fontFamily="@font/abhaya_libre"
-                android:layout_marginStart="5dp"
-                android:layout_marginEnd="5dp"
                 android:letterSpacing="0.07"/>
 
             <ImageView
                 android:id="@+id/palet_icon_almacen_adapter"
-                android:layout_width="30dp"
+                android:layout_width="0dp"
                 android:layout_height="30dp"
+                android:layout_weight="1"
                 android:src="@drawable/palet_icon"
-                android:layout_marginEnd="10dp"/>
+                android:layout_marginStart="5dp"/>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:gravity="center">
 
             <TextView
+                android:id="@+id/caja_almacen_adapter"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+
+                android:layout_weight="2"
+                android:gravity="end"
+
+                android:text="264"
                 android:textSize="27sp"
                 android:textStyle="bold"
                 android:textColor="@color/black"
-                android:id="@+id/caja_almacen_adapter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="264"
                 android:fontFamily="@font/abhaya_libre"
-                android:layout_marginEnd="5dp"
                 android:letterSpacing="0.07"/>
 
             <ImageView
@@ -103,24 +109,28 @@
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:src="@drawable/caja_icon"
-                android:layout_marginEnd="10dp"/>
+                android:layout_marginStart="5dp"/>
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:gravity="center">
 
             <TextView
+                android:id="@+id/cantidad_almacen_adapter"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+
+                android:layout_weight="2"
+                android:gravity="end"
+
+                android:text="12099"
                 android:textSize="27sp"
                 android:textStyle="bold"
                 android:textColor="@color/black"
-                android:id="@+id/cantidad_almacen_adapter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="12099"
                 android:fontFamily="@font/abhaya_libre"
                 android:letterSpacing="0.07"/>
 
