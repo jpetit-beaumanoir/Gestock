@@ -5,12 +5,18 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.lifecycle.lifecycleScope
@@ -25,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
+import org.w3c.dom.Text
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -38,8 +45,8 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
     private var codigoAlmacen: Int = 0
     private var collectionStock: Collection<AlmacenVirtualProducto> = emptyList()
     private lateinit var device: BluetoothDevice
-    private lateinit var editViewDescripcion: EditText
-    private lateinit var editViewTemporada: EditText
+    private lateinit var editTextDescripcion: EditText
+    private lateinit var editTextTemporada: EditText
     private var idCaja: Int = 0
     private var idPalet: Int = 0
     private val printerUUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
@@ -48,6 +55,19 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
     private lateinit var totalProductosCaja: TextView
     private var productList: MutableList<AlmacenVirtualProducto> = ArrayList()
     private val db = DatabaseHelper(this)
+
+    private lateinit var textViewTitolActivity: TextView
+    private var menuVisible = false
+    private var menuAnimando = false
+
+    private lateinit var menuOpciones: View
+    private lateinit var botonOpcionesCaja: View
+
+    private lateinit var botonEliminarProductosCaja: ImageButton
+    private lateinit var botonAnadirProductosCaja: ImageButton
+    private lateinit var botonMoverProductosCaja: ImageButton
+    private lateinit var botonImprimirEtiquetaCaja: ImageButton
+    private lateinit var botonGuardarDescTemp: AppCompatButton
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
 
     interface APIResponseCallback {
@@ -59,114 +79,334 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
         super.onCreate(savedInstanceState)
         setContentView(R.layout.gestion_cajas_almacen)
 
-        val textView = findViewById<TextView>(R.id.titulo_gestion_cajas_almacen)
-        editViewDescripcion = findViewById(R.id.descripcion_caja)
-        editViewTemporada = findViewById(R.id.temporada_caja)
-
+        // OBTENIR INFORMACIÓ DE LA ACTIVITY ANTERIOR
         codigoAlmacen = intent.getIntExtra("almacen", 0)
         idPalet = intent.getIntExtra("palet", 0)
         idCaja = intent.getIntExtra("caja", 0)
-        textView.text = "ARTÍCULOS PALET $idPalet CAJA $idCaja"
+        //---------------------------------------------------------------
+
+        // OBTENIR TOTES LES IDs DINTRE DE LA ACTIVITY
+        textViewTitolActivity = findViewById(R.id.titulo_gestion_cajas_almacen)
+
+        menuOpciones = findViewById(R.id.menu_inferior_opciones_caja)
+        botonOpcionesCaja = findViewById(R.id.boto_opcions_caixa)
+
+        botonEliminarProductosCaja = findViewById(R.id.eliminar_productos_caja)
+        botonAnadirProductosCaja = findViewById(R.id.anadir_productos_caja)
+        botonMoverProductosCaja = findViewById(R.id.mover_productos_caja)
+        botonImprimirEtiquetaCaja = findViewById(R.id.imprimir_etiqueta_caja)
+
+        editTextDescripcion = findViewById(R.id.descripcion_caja)
+        editTextTemporada = findViewById(R.id.temporada_caja)
+
+        botonGuardarDescTemp = findViewById(R.id.boton_guardar_desc_temp)
+        //---------------------------------------------------------------
+
+        // DEFINIR EL TITOL DE LA ACTIVITY
+        textViewTitolActivity.text = "ARTÍCULOS PALET $idPalet CAJA $idCaja"
+
+        // OBTENIR LA DESCRIPCIO I LA TEMPORADA DE LA CAIXA
         getDescTempAPI()
+
+        editTextTemporada.setOnEditorActionListener { view, i, event ->  }
+        editTextDescripcion.setOnEditorActionListener { view, i, event ->  }
+
+        cuan es faci clic a algun dels camps per modificar temporada o descripcio i sigui diferent al que ja hi habia s'activi el boto de guardar
+
+        /* val editText = findViewById<EditText>(R.id.descripcion_caja)
+         val editText2 = findViewById<EditText>(R.id.temporada_caja)
+         val temporada: String
+         if (editText2.text.toString().isEmpty()) {
+             if (editText2.hint == "TEMP") {
+                 editText2.hint = "SIN TEMPORADA"
+             }
+             temporada = editText2.hint.toString()
+         } else {
+             editText2.hint = editText2.text
+             temporada = editText2.hint.toString()
+         }
+         if (editText.text.toString().isEmpty()) {
+             if (editText.hint == "DESCRIPCIÓN") {
+                 editText.hint = "SIN DESCRIPCIÓN"
+             }
+             editText.setText(editText.hint)
+         } else {
+             editText.hint = editText.text
+         }
+         updateCajaDescTempAPI(
+             editText.text.toString().uppercase(Locale.ROOT),
+             temporada.uppercase(Locale.ROOT),
+             object : APIResponseCallback {
+                 override fun onSuccess(response: String) {}
+                 override fun onError(errorMessage: String) {
+                     Toast.makeText(this@GestionCajasAlmacen, errorMessage, Toast.LENGTH_LONG).show()
+                 }
+             }
+         )*/
+
+        prepararMenuCerrado()
+
+        botonOpcionesCaja.setOnClickListener {
+            if (menuVisible) {
+                cerrarMenuFlotante()
+            } else {
+                abrirMenuFlotante()
+            }
+        }
+
+        botonEliminarProductosCaja.setOnClickListener {
+
+            cerrarMenuFlotante()
+
+            val intent = Intent(this, EliminarProductoCaja::class.java)
+            intent.putExtra("caja", idCaja)
+            intent.putExtra("palet", idPalet)
+            intent.putExtra("almacen", codigoAlmacen)
+            intent.putExtra("stock", ArrayList(collectionStock))
+            startActivity(intent)
+        }
+
+        botonAnadirProductosCaja.setOnClickListener {
+
+            cerrarMenuFlotante()
+
+            val intent = Intent(this, AñadirProductoCaja::class.java)
+            intent.putExtra("caja", idCaja)
+            intent.putExtra("palet", idPalet)
+            intent.putExtra("almacen", codigoAlmacen)
+            startActivity(intent)
+
+            menuOpciones.visibility = View.GONE
+            menuVisible = false
+            botonOpcionesCaja.rotation = 180f
+        }
+
+        botonMoverProductosCaja.setOnClickListener {
+
+            cerrarMenuFlotante()
+
+            val intent = Intent(this, MoverProductosCaja::class.java)
+            intent.putExtra("caja", idCaja)
+            intent.putExtra("palet", idPalet)
+            intent.putExtra("almacen", codigoAlmacen)
+            intent.putExtra("stock", ArrayList(collectionStock))
+            startActivity(intent)
+
+            menuOpciones.visibility = View.GONE
+            menuVisible = false
+            botonOpcionesCaja.rotation = 180f
+        }
+
+        botonImprimirEtiquetaCaja.setOnClickListener {
+
+            cerrarMenuFlotante()
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    buscarBluetoothPrinters()
+                    connectToPrinter(device)
+                    val zpl = """
+                                ^XA
+                                ^PW400
+                                ^LL400
+                                ^LT0
+    
+                                ^FO50,10
+                                ^BY2,2,60
+                                ^BCN,60,N,N,N,A
+                                ^FD${"%04d".format(codigoAlmacen)}${"%04d".format(idPalet)}${
+                        "%04d".format(
+                            idCaja
+                        )
+                    }^FS
+    
+                                ^FO0,80
+                                ^A0N,20,20
+                                ^FB300,1,0,C
+                                ^FD${"%04d".format(codigoAlmacen)}${"%04d".format(idPalet)}${
+                        "%04d".format(
+                            idCaja
+                        )
+                    }^FS
+    
+                                ^FO0,130
+                                ^A0N,40,40
+                                ^FB300,1,0,C
+                                ^FDalm: $codigoAlmacen^FS
+    
+                                ^FO0,180
+                                ^A0N,40,40
+                                ^FB300,1,0,C
+                                ^FDpalet: $idPalet^FS
+    
+                                ^FO0,230
+                                ^A0N,40,40
+                                ^FB300,1,0,C
+                                ^FDcaja: $idCaja^FS
+    
+                                ^XZ
+                                """.trimIndent()
+                    printData(zpl.toByteArray(Charsets.UTF_8))
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@GestionCajasAlmacen,
+                            e.message,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+
+            menuOpciones.visibility = View.GONE
+            menuVisible = false
+            botonOpcionesCaja.rotation = 180f
+        }
 
         recyclerView = findViewById(R.id.mostrar_productos)
         recyclerView.layoutManager = LinearLayoutManager(this)
         totalProductosCaja = findViewById(R.id.total_productos_caja)
 
-        findViewById<AppCompatButton>(R.id.boto_opcions_caixa).setOnClickListener {
-            val bottomSheetDialog = BottomSheetDialog(this)
-            val view = layoutInflater.inflate(R.layout.menu_opcions_caixa, null)
-            bottomSheetDialog.setContentView(view)
+    }
 
-            view.findViewById<AppCompatButton>(R.id.eliminar_productos_caja).setOnClickListener {
-                val intent = Intent(this, EliminarProductoCaja::class.java)
-                intent.putExtra("caja", idCaja)
-                intent.putExtra("palet", idPalet)
-                intent.putExtra("almacen", codigoAlmacen)
-                intent.putExtra("stock", ArrayList(collectionStock))
-                startActivity(intent)
-                bottomSheetDialog.hide()
-            }
-            view.findViewById<AppCompatButton>(R.id.anadir_productos_caja).setOnClickListener {
-                val intent = Intent(this, AñadirProductoCaja::class.java)
-                intent.putExtra("caja", idCaja)
-                intent.putExtra("palet", idPalet)
-                intent.putExtra("almacen", codigoAlmacen)
-                startActivity(intent)
-                bottomSheetDialog.hide()
-            }
-            view.findViewById<AppCompatButton>(R.id.mover_productos_caja).setOnClickListener {
-                val intent = Intent(this, MoverProductosCaja::class.java)
-                intent.putExtra("caja", idCaja)
-                intent.putExtra("palet", idPalet)
-                intent.putExtra("almacen", codigoAlmacen)
-                intent.putExtra("stock", ArrayList(collectionStock))
-                startActivity(intent)
-                bottomSheetDialog.hide()
-            }
+    // FUNCIO CONVERTIR dp A PIXELS
+    private fun Int.dp(): Float {
+        return this * resources.displayMetrics.density
+    }
 
-            view.findViewById<AppCompatButton>(R.id.imprimir_etiqueta_caja).setOnClickListener {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    try {
-                        buscarBluetoothPrinters()
-                        connectToPrinter(device)
-                        val zpl = """
-                            ^XA
-                            ^PW400
-                            ^LL400
-                            ^LT0
+    private fun prepararMenuCerrado() {
 
-                            ^FO50,10
-                            ^BY2,2,60
-                            ^BCN,60,N,N,N,A
-                            ^FD${"%04d".format(codigoAlmacen)}${"%04d".format(idPalet)}${"%04d".format(idCaja)}^FS
+        val botones = listOf(
+            botonEliminarProductosCaja,
+            botonAnadirProductosCaja,
+            botonImprimirEtiquetaCaja,
+            botonMoverProductosCaja
+        )
 
-                            ^FO0,80
-                            ^A0N,20,20
-                            ^FB300,1,0,C
-                            ^FD${"%04d".format(codigoAlmacen)}${"%04d".format(idPalet)}${"%04d".format(idCaja)}^FS
+        botones.forEach { boton ->
+            boton.translationX = 0f
+            boton.translationY = 0f
+            boton.alpha = 0f
+            boton.scaleX = 0.2f
+            boton.scaleY = 0.2f
+        }
 
-                            ^FO0,130
-                            ^A0N,40,40
-                            ^FB300,1,0,C
-                            ^FDalm: $codigoAlmacen^FS
+        menuOpciones.visibility = View.GONE
+        menuVisible = false
+        menuAnimando = false
+        botonOpcionesCaja.rotation = 180f
+    }
 
-                            ^FO0,180
-                            ^A0N,40,40
-                            ^FB300,1,0,C
-                            ^FDpalet: $idPalet^FS
+    private fun abrirMenuFlotante() {
 
-                            ^FO0,230
-                            ^A0N,40,40
-                            ^FB300,1,0,C
-                            ^FDcaja: $idCaja^FS
+        if (menuAnimando) return
 
-                            ^XZ
-                            """.trimIndent()
-                        printData(zpl.toByteArray(Charsets.UTF_8))
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                    withContext(Dispatchers.Main) {
-                        bottomSheetDialog.hide()
+        menuAnimando = true
+        menuVisible = true
+
+        menuOpciones.visibility = View.VISIBLE
+        menuOpciones.alpha = 1f
+
+        animarBotonMenu(
+            botonImprimirEtiquetaCaja,
+            translationX = (-115).dp(),
+            translationY = (-30).dp(),
+            delay = 0L
+        )
+
+        animarBotonMenu(
+            botonEliminarProductosCaja,
+            translationX = (-60).dp(),
+            translationY = (-100).dp(),
+            delay = 0L
+        )
+
+        animarBotonMenu(
+            botonAnadirProductosCaja,
+            translationX = 60.dp(),
+            translationY = (-100).dp(),
+            delay = 40L
+        )
+
+        animarBotonMenu(
+            botonMoverProductosCaja,
+            translationX = 115.dp(),
+            translationY = (-30).dp(),
+            delay = 40L
+        )
+
+        menuAnimando = false
+
+        botonOpcionesCaja.animate()
+            .rotation(0f)
+            .setDuration(220)
+            .start()
+    }
+
+    private fun animarBotonMenu(
+        boton: View,
+        translationX: Float,
+        translationY: Float,
+        delay: Long
+    ) {
+        boton.animate()
+            .translationX(translationX)
+            .translationY(translationY)
+            .alpha( 1f)
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(260)
+            .setStartDelay(delay)
+            .setInterpolator(android.view.animation.OvershootInterpolator(1.2f))
+            .start()
+    }
+
+    private fun cerrarMenuFlotante() {
+
+        if (menuAnimando) return
+
+        menuAnimando = true
+        menuVisible = false
+
+        val botones = listOf(
+            botonEliminarProductosCaja,
+            botonAnadirProductosCaja,
+            botonImprimirEtiquetaCaja,
+            botonMoverProductosCaja
+        )
+
+        botones.forEachIndexed { index, boton ->
+
+            boton.animate()
+                .translationX(0f)
+                .translationY(0f)
+                .alpha(0f)
+                .scaleX(0.2f)
+                .scaleY(0.2f)
+                .setDuration(200)
+                .setStartDelay((index * 25).toLong())
+                .withEndAction {
+                    if (index == botones.lastIndex) {
+                        menuOpciones.visibility = View.GONE
+                        menuAnimando = false
                     }
                 }
-            }
-            bottomSheetDialog.show()
+                .start()
         }
+
+        botonOpcionesCaja.animate()
+            .rotation(180f)
+            .setDuration(220)
+            .start()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun buscarBluetoothPrinters() {
-        val adapter = bluetoothAdapter
-        if (adapter == null) {
-            Toast.makeText(this, "EL DISPOSITIU NO SUPORTA BLUETOOTH", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val adapter = bluetoothAdapter ?: throw Exception("EL DISPOSITIU NO SUPORTA BLUETOOTH")
         if (!adapter.isEnabled) {
-            Toast.makeText(this, "ACTIVA EL BLUETOOTH", Toast.LENGTH_SHORT).show()
-            return
+            throw Exception("ACTIVA EL BLUETOOTH")
         }
+
         val bondedDevices = adapter.bondedDevices
         if (bondedDevices.isNotEmpty()) {
             for (bluetoothDevice in bondedDevices) {
@@ -176,7 +416,7 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
                 }
             }
         } else {
-            Log.d("BluetoothCheck", "No hay dispositivos emparejados.")
+            throw Exception("NO HAY UNA IMPRESORA EMPAREJADA")
         }
     }
 
@@ -188,8 +428,8 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
             bluetoothSocket?.connect()
             Log.d("Impresora Conectada", "Conectado a ${device.name}")
         } catch (e: IOException) {
-            Log.e("Error conexión", "No se pudo conectar a la impresora: ${e.message}")
             cerrarConexionBluetooth()
+            throw Exception("NO SE PUDO CONECTAR A LA IMPRESORA: ${e.message}")
         }
     }
 
@@ -203,7 +443,7 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
             bluetoothSocket?.outputStream?.write(data)
             bluetoothSocket?.outputStream?.flush()
         } catch (e: IOException) {
-            Toast.makeText(this, "Error al imprimir: $e", Toast.LENGTH_SHORT).show()
+            throw Exception("ERROR AL IMPRIMIR: ${e.message}")
         }
     }
 
@@ -225,8 +465,8 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
                     if (response.isSuccessful) {
                         val body = response.body()
                         if (body != null) {
-                            editViewTemporada.hint = body.temporada
-                            editViewDescripcion.hint = body.descripcion
+                            editTextTemporada.hint = body.temporada
+                            editTextTemporada.hint = body.descripcion
                         }
                     } else {
                         Toast.makeText(this@GestionCajasAlmacen, "Error al obtener los almacenes", Toast.LENGTH_LONG).show()
@@ -306,6 +546,8 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
 
     override fun onResume() {
         super.onResume()
+        prepararMenuCerrado()
+
         recyclerView = findViewById(R.id.mostrar_productos)
         recyclerView.layoutManager = LinearLayoutManager(this)
         productList.clear()
@@ -316,36 +558,6 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
     @Deprecated("Deprecated in Java")
     @Suppress("DEPRECATION")
     override fun onBackPressed() {
-        val editText = findViewById<EditText>(R.id.descripcion_caja)
-        val editText2 = findViewById<EditText>(R.id.temporada_caja)
-        val temporada: String
-        if (editText2.text.toString().isEmpty()) {
-            if (editText2.hint == "TEMP") {
-                editText2.hint = "SIN TEMPORADA"
-            }
-            temporada = editText2.hint.toString()
-        } else {
-            editText2.hint = editText2.text
-            temporada = editText2.hint.toString()
-        }
-        if (editText.text.toString().isEmpty()) {
-            if (editText.hint == "DESCRIPCIÓN") {
-                editText.hint = "SIN DESCRIPCIÓN"
-            }
-            editText.setText(editText.hint)
-        } else {
-            editText.hint = editText.text
-        }
-        updateCajaDescTempAPI(
-            editText.text.toString().uppercase(Locale.ROOT),
-            temporada.uppercase(Locale.ROOT),
-            object : APIResponseCallback {
-                override fun onSuccess(response: String) {}
-                override fun onError(errorMessage: String) {
-                    Toast.makeText(this@GestionCajasAlmacen, errorMessage, Toast.LENGTH_LONG).show()
-                }
-            }
-        )
         super.onBackPressed()
     }
 
