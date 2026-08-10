@@ -1,62 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/drawer_layout_almacen_virtual_main_cajas"
+    android:fitsSystemWindows="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <ImageView
-        android:background="@drawable/almacen_cajas_background"
+
+    <LinearLayout
+        android:id="@+id/linearlayout_almacen_virtual_main_cajas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/refresh_button_cajas"
-        android:background="@drawable/refresh_icon"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_margin="10dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-    <TextView
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:id="@+id/numero_palet"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:text="PALET"
-        android:fontFamily="@font/abhaya_libre"
-        android:letterSpacing="0.07"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:maxHeight="500dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/numero_palet">
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/mostrar_cajas_almacen"
+        android:background="@drawable/almacen_cajas_background"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:maxHeight="400dp"/>
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_margin="10dp">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/refresh_button_cajas"
+                android:background="@drawable/refresh_icon"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+
+            <TextView
+                android:id="@+id/numero_palet"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+
+                android:layout_weight="1"
+                android:gravity="center"
+
+                android:text="CAJAS PALET 3"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:fontFamily="@font/abhaya_libre"
+                android:letterSpacing="0.07"/>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/boton_menu"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/menu_icon_24" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2">
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/mostrar_cajas_almacen"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/anadir_caja"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/border_line"
+
+            android:layout_margin="20dp"
+
+            android:text="AÑADIR CAJA"
+            android:textSize="28sp"
+            android:textColor="@color/black"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07"/>
+
     </LinearLayout>
-    <androidx.appcompat.widget.AppCompatButton
-        android:textSize="28sp"
-        android:textColor="@color/black"
-        android:id="@+id/anadir_caja"
-        android:background="@drawable/border_line"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="60dp"
-        android:text="AÑADIR CAJA"
-        android:fontFamily="@font/abhaya_libre"
-        android:letterSpacing="0.07"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <include layout="@layout/menu_stocksearch"/>
+</androidx.drawerlayout.widget.DrawerLayout>

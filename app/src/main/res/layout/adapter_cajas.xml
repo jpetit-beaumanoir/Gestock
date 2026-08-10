@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/border_line_producte"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -40,7 +39,7 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="2"
+        android:layout_weight="3"
         android:orientation="vertical"
         android:gravity="center_vertical">
 
@@ -50,7 +49,7 @@
             android:layout_height="wrap_content"
 
             android:text="TEMPORADA"
-            android:textSize="20dp"
+            android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/black"
             android:fontFamily="@font/abhaya_libre"
@@ -58,11 +57,15 @@
 
         <TextView
             android:id="@+id/textview_descripcion"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
 
-            android:text="DESCRIPCIÓN"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:scrollHorizontally="false"
             android:textSize="20sp"
+
+            android:text="DESCRIPCIÓN"
             android:textStyle="bold"
             android:textColor="@color/black"
             android:fontFamily="@font/abhaya_libre"

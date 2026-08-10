@@ -6,6 +6,31 @@
     android:gravity="start"
     android:padding="15dp"
     android:background="@drawable/border_line_recycler">
+    
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:text="CREAR - Para crear un almacén es necesario introducir nombre y código."
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:fontFamily="@font/abhaya_libre"
+        android:letterSpacing="0.07">
+    </TextView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+
+        android:text="ELIMINAR - Para eliminar un almacén escribir el código."
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:fontFamily="@font/abhaya_libre"
+        android:letterSpacing="0.07">
+    </TextView>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -50,11 +75,13 @@
             android:id="@+id/boton_eliminar_almacen"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:background="@drawable/border_line"
 
+            android:layout_weight="1"
             android:layout_margin="10dp"
 
-            android:background="@drawable/border_line"
+            android:alpha="0.5"
+            android:enabled="false"
 
             android:textSize="18sp"
             android:textStyle="bold"
@@ -66,11 +93,13 @@
             android:id="@+id/boton_crear_almacen"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:background="@drawable/border_line"
 
+            android:layout_weight="1"
             android:layout_margin="10dp"
 
-            android:background="@drawable/border_line"
+            android:alpha="0.5"
+            android:enabled="false"
 
             android:textSize="18sp"
             android:textStyle="bold"

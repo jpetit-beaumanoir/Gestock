@@ -1,44 +1,66 @@
 package com.beaumanoir.gestock.data
 
+import android.Manifest
 import android.animation.ObjectAnimator
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
+import android.view.MenuItem
+import android.view.View
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresPermission
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.beaumanoir.gestock.R
 import com.beaumanoir.gestock.data.API.RetrofitClient
 import com.beaumanoir.gestock.data.sqlite.CajaAdapter
+import com.google.android.material.navigation.NavigationView
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.File
 import java.io.IOException
 import java.util.Locale
 import java.util.UUID
 
-class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickListener {
+class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickListener, NavigationView.OnNavigationItemSelectedListener {
 
+    private val REQUEST_CODE_PERMISSIONS = 1001
     private var bluetoothSocket: BluetoothSocket? = null
     private lateinit var cajaAdapter: CajaAdapter
     private var codigoAlmacen: Int = 0
+    private lateinit var nombreAlmacen: String
     private lateinit var device: BluetoothDevice
     private var idPalet: Int = 0
     private val printerUUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
     private lateinit var recyclerView: RecyclerView
     private var cajasList: MutableList<AlmacenVirtualCaja> = ArrayList()
+
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var textViewImportando: TextView
+    private lateinit var progresBarImportando: ProgressBar
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
 
     interface APIResponseCallback {
@@ -50,8 +72,14 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
         super.onCreate(savedInstanceState)
         setContentView(R.layout.almacen_virtual_main_cajas)
 
-        codigoAlmacen = intent.getIntExtra("almacen", 0)
+        codigoAlmacen = intent.getIntExtra("codigo_almacen", 0)
+        nombreAlmacen = intent.getStringExtra("nombre_almacen").toString().uppercase()
         idPalet = intent.getIntExtra("palet", 0)
+
+        findViewById<TextView>(R.id.numero_palet).text = "CAJAS PALET $idPalet"
+
+        textViewImportando = findViewById(R.id.textview_importando)
+        progresBarImportando = findViewById(R.id.progresbar_importando)
 
         val refreshButton = findViewById<AppCompatButton>(R.id.refresh_button_cajas)
         refreshButton.setOnClickListener {
@@ -62,7 +90,36 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
             getCajasAPI()
         }
 
-        findViewById<TextView>(R.id.numero_palet).text = "CAJAS PALET $idPalet"
+        // ============================================= CODI MENU LATERAL ============================================= //
+        val navigationView = findViewById<NavigationView>(R.id.nav_menu)
+        val headerView = navigationView.getHeaderView(0)
+        headerView.findViewById<TextView>(R.id.nombre_almacen_navigation).text = nombreAlmacen
+        headerView.findViewById<TextView>(R.id.codigo_almacen_navigation).text = codigoAlmacen.toString()
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.linearlayout_almacen_virtual_main_cajas)) { v, insets ->
+            val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        drawerLayout = findViewById(R.id.drawer_layout_almacen_virtual_main_cajas)
+        val botonMenu = findViewById<AppCompatButton>(R.id.boton_menu)
+        val toggle = ActionBarDrawerToggle(
+            this,drawerLayout,null,
+            R.string.navigation_drawer_open,R.string.navigation_drawer_close
+
+        )
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+        navigationView.setNavigationItemSelectedListener(this)
+        botonMenu.setOnClickListener {
+            if (drawerLayout.isDrawerOpen(GravityCompat.END)) {
+                drawerLayout.closeDrawer(GravityCompat.END)
+            } else {
+                drawerLayout.openDrawer(GravityCompat.END)
+            }
+        }
+        // ============================================================================================================= //
 
         recyclerView = findViewById(R.id.mostrar_cajas_almacen)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -83,7 +140,6 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
                     deleteCajaAPI(caja.caja, object : APIResponseCallback {
                         override fun onSuccess(response: String) {
                             getCajasAPI()
-                            adjustRecyclerViewHeight()
                         }
 
                         override fun onError(errorMessage: String) {
@@ -97,7 +153,6 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
             }
         }
         ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView)
-        adjustRecyclerViewHeight()
 
         findViewById<AppCompatButton>(R.id.anadir_caja).setOnClickListener {
             if (RetrofitClient.isConnectedToInternet(this)) {
@@ -115,7 +170,6 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
                 Toast.makeText(this, "NO TIENES CONEXIÓN A INTERNET", Toast.LENGTH_LONG).show()
             }
             cajaAdapter.notifyDataSetChanged()
-            adjustRecyclerViewHeight()
         }
     }
 
@@ -136,7 +190,6 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
             Toast.makeText(this, "NO TIENES CONEXIÓN A INTERNET", Toast.LENGTH_LONG).show()
         }
         cajaAdapter.notifyDataSetChanged()
-        adjustRecyclerViewHeight()
     }
 
     override fun onDestroy() {
@@ -144,16 +197,11 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
         cerrarConexionBluetooth()
     }
 
-    private fun adjustRecyclerViewHeight() {
-        recyclerView.layoutParams.height = if (cajasList.size > 6) 1200 else -2
-    }
-
     private fun dialegImprimirEtiqueta(idCaja: Int) {
         AlertDialog.Builder(this)
             .setTitle("Imprimir etiqueta de la caja")
             .setItems(arrayOf("Si", "No")) { _, which ->
                 if (which == 0) {
-                    solicitarPermisos()
                     buscarBluetoothPrinters()
                     connectToPrinter(device)
                     val zpl = """
@@ -196,53 +244,13 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
             .show()
     }
 
-    private fun solicitarPermisos() {
-        if (Build.VERSION.SDK_INT >= 31) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(
-                    "android.permission.BLUETOOTH_SCAN",
-                    "android.permission.BLUETOOTH_CONNECT",
-                    "android.permission.ACCESS_FINE_LOCATION"
-                ),
-                1
-            )
-        } else {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf("android.permission.ACCESS_FINE_LOCATION"),
-                1
-            )
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1 && grantResults.isNotEmpty()) {
-            for (result in grantResults) {
-                if (result != -1) {
-                    return
-                }
-            }
-            Toast.makeText(this, "Permiso denegado", Toast.LENGTH_SHORT).show()
-        }
-    }
-
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun buscarBluetoothPrinters() {
-        bluetoothSocket?.close()
-        val adapter = bluetoothAdapter
-        if (adapter == null) {
-            Toast.makeText(this, "EL DISPOSITIU NO SUPORTA BLUETOOTH", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val adapter = bluetoothAdapter ?: throw Exception("EL DISPOSITIU NO SUPORTA BLUETOOTH")
         if (!adapter.isEnabled) {
-            Toast.makeText(this, "ACTIVA EL BLUETOOTH", Toast.LENGTH_SHORT).show()
-            return
+            throw Exception("ACTIVA EL BLUETOOTH")
         }
+
         val bondedDevices = adapter.bondedDevices
         if (bondedDevices.isNotEmpty()) {
             for (bluetoothDevice in bondedDevices) {
@@ -252,10 +260,11 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
                 }
             }
         } else {
-            Log.d("BluetoothCheck", "No hay dispositivos emparejados.")
+            throw Exception("NO HAY UNA IMPRESORA EMPAREJADA")
         }
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun connectToPrinter(device: BluetoothDevice) {
         cerrarConexionBluetooth()
         try {
@@ -263,12 +272,12 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
             bluetoothSocket?.connect()
             Log.d("Impresora Conectada", "Conectado a ${device.name}")
         } catch (e: IOException) {
-            Log.e("Error conexión", "No se pudo conectar a la impresora: ${e.message}")
-            cerrarConexionBluetooth()
+            throw Exception("NO SE PUDO CONECTAR A LA IMPRESORA: ${e.message}")
         }
     }
 
-    private fun printData(data: ByteArray) {
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun printData(data: ByteArray) {
         try {
             val socket = bluetoothSocket
             if (socket != null && !socket.isConnected) {
@@ -277,7 +286,7 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
             bluetoothSocket?.outputStream?.write(data)
             bluetoothSocket?.outputStream?.flush()
         } catch (e: IOException) {
-            Toast.makeText(this, "Error al imprimir: $e", Toast.LENGTH_SHORT).show()
+            throw Exception("ERROR AL IMPRIMIR: ${e.message}")
         }
     }
 
@@ -309,7 +318,6 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
                             recyclerView.adapter = cajaAdapter
                         }
                         recyclerView.scheduleLayoutAnimation()
-                        adjustRecyclerViewHeight()
                     } else if (response.code() != 404) {
                         Toast.makeText(this@AlmacenVirtualMainCajas, "Error al obtener las cajas", Toast.LENGTH_LONG).show()
                     }
@@ -370,5 +378,139 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
                     }
                 }
             })
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout_almacen_virtual_main_cajas)
+        when (item.itemId) {
+            R.id.boton_exportar_stock -> {
+                val intent = Intent(this@AlmacenVirtualMainCajas, StockSearch::class.java)
+                intent.putExtra("codigo_almacen", codigoAlmacen)
+                intent.putExtra("nombre_almacen", nombreAlmacen)
+                startActivity(intent)
+            }
+
+            R.id.boton_importar_catalogo -> {
+                if (checkPermissions()) {
+                    val file = File("/storage/emulated/0/Download").listFiles()
+                        ?.firstOrNull { it.isFile && it.name.startsWith("Catalogo") }
+                    if (file != null) {
+                        try {
+                            val brand = file.name.split(".")[0].split("_")[1]
+                            if (brand.isNotEmpty()) {
+                                progresBarImportando.visibility = View.VISIBLE
+                                textViewImportando.visibility = View.VISIBLE
+                                textViewImportando.text = "Importando ${file.name}"
+                                uploadCSV(file, brand)
+                            } else {
+                                Toast.makeText(this, "No se pudo extraer la marca del archivo", Toast.LENGTH_LONG).show()
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(this, "Error al procesar el archivo: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
+                    } else {
+                        Toast.makeText(this, "No se encontró un archivo de catálogo válido", Toast.LENGTH_LONG).show()
+                    }
+                } else {
+                    Toast.makeText(this, "Se requieren permisos para acceder al almacenamiento", Toast.LENGTH_LONG).show()
+                }
+            }
+
+            R.id.boton_asignar_stock -> {
+                val downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                if (!downloads.exists() || !downloads.isDirectory) {
+                    Toast.makeText(this, "No se ha encontrado la carpeta ${downloads.name}", Toast.LENGTH_LONG).show()
+                }
+                val files = downloads.listFiles { _, name ->
+                    name.endsWith(".txt", true) && name.length == 16 &&
+                            name.substring(0, 4).toInt() == codigoAlmacen
+                } ?: emptyArray()
+                if (files.isEmpty()) {
+                    Toast.makeText(this, "No se han encontrado archivos para este almacén", Toast.LENGTH_LONG).show()
+                    return false
+                }
+                for (file in files) {
+                    try {
+                        val almacen = file.name.substring(0, 4).toInt()
+                        val palet = file.name.substring(4, 8).toInt()
+                        val caja = file.name.substring(8, 12).toInt()
+                        if (almacen == codigoAlmacen) {
+                            try {
+                                Menu.checkCajaExists(this, almacen, palet, caja, file.readLines(), file)
+                            } catch (e: Exception) {
+                                Toast.makeText(this, "Error procesando archivo ${file.name}: $e", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // Nombre de archivo con formato inesperado: se ignora.
+                    }
+                }
+            }
+        }
+        drawerLayout.closeDrawer(GravityCompat.END)
+        return true
+    }
+
+    private fun uploadCSV(file: File, brandName: String) {
+        val csvPart = MultipartBody.Part.createFormData(
+            "csv_file",
+            file.name,
+            file.asRequestBody("text/csv".toMediaTypeOrNull())
+        )
+        val brandBody = brandName.toRequestBody("text/plain".toMediaTypeOrNull())
+        RetrofitClient.getApiService(this).subirCatalogo(csvPart, brandBody)
+            .enqueue(object : Callback<ResponseBody> {
+                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                    textViewImportando.visibility = View.GONE
+                    progresBarImportando.visibility = View.GONE
+                    if (response.isSuccessful) {
+                        Toast.makeText(this@AlmacenVirtualMainCajas, "Respuesta: ${response.body()?.string()}", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@AlmacenVirtualMainCajas, "No hay productos a insertar", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                    textViewImportando.visibility = View.GONE
+                    progresBarImportando.visibility = View.GONE
+                    val message = t.message?.lowercase(Locale.ROOT)
+                    if (message != null && message.contains("unable to resolve host")) {
+                        Toast.makeText(this@AlmacenVirtualMainCajas, "No tienes conexión a internet", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(this@AlmacenVirtualMainCajas, "Error: " + t.message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            })
+    }
+
+    private fun checkPermissions(): Boolean {
+        if (ContextCompat.checkSelfPermission(this, "android.permission.READ_EXTERNAL_STORAGE") == 0) {
+            return true
+        }
+        ActivityCompat.requestPermissions(this, arrayOf("android.permission.READ_EXTERNAL_STORAGE"), REQUEST_CODE_PERMISSIONS)
+        return false
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (grantResults.isNotEmpty() && grantResults[0] == 0) {
+                Toast.makeText(this, "Permiso de almacenamiento concedido", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Permiso de almacenamiento denegado", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    @Suppress("DEPRECATION")
+    override fun onBackPressed() {
+
+        if (drawerLayout.isDrawerOpen(GravityCompat.END)) {
+            drawerLayout.closeDrawer(GravityCompat.END)
+            return
+        }
+
+        super.onBackPressed()
     }
 }

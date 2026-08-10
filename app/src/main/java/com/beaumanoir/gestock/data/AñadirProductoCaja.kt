@@ -140,7 +140,7 @@ class AñadirProductoCaja : AppCompatActivity(), ProductoAdapter.OnItemClickList
         })
 
         findViewById<AppCompatButton>(R.id.cancelar_adicion_productos).setOnClickListener {
-            if (eansAfegirList.size > 0) {
+            if (eansAfegirList.isNotEmpty()) {
                 AlertDialog.Builder(this)
                     .setTitle("¿SEGURO QUE QUIERES CANCELAR?")
                     .setCancelable(false)
@@ -154,7 +154,7 @@ class AñadirProductoCaja : AppCompatActivity(), ProductoAdapter.OnItemClickList
         }
 
         findViewById<AppCompatButton>(R.id.confirmar_adicion_productos).setOnClickListener {
-            if (eansAfegirList.size > 0) {
+            if (eansAfegirList.isNotEmpty()) {
                 addStockAPI(eansAfegirList)
             }
             finish()

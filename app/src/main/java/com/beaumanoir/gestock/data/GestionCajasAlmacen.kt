@@ -1,15 +1,20 @@
 package com.beaumanoir.gestock.data
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.inputmethodservice.InputMethodService
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -19,6 +24,7 @@ import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
+import androidx.core.content.getSystemService
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -59,7 +65,8 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
     private lateinit var textViewTitolActivity: TextView
     private var menuVisible = false
     private var menuAnimando = false
-
+    private lateinit var descripcionActual: String
+    private lateinit var temporadaActual: String
     private lateinit var menuOpciones: View
     private lateinit var botonOpcionesCaja: View
 
@@ -106,43 +113,84 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
         textViewTitolActivity.text = "ARTÍCULOS PALET $idPalet CAJA $idCaja"
 
         // OBTENIR LA DESCRIPCIO I LA TEMPORADA DE LA CAIXA
-        getDescTempAPI()
+        getDescTempAPI { descripcion, temporada ->
+            descripcionActual = descripcion
+            temporadaActual = temporada
 
-        editTextTemporada.setOnEditorActionListener { view, i, event ->  }
-        editTextDescripcion.setOnEditorActionListener { view, i, event ->  }
+            editTextDescripcion.hint = descripcionActual
+            editTextTemporada.hint = temporadaActual
+        }
 
-        cuan es faci clic a algun dels camps per modificar temporada o descripcio i sigui diferent al que ja hi habia s'activi el boto de guardar
+        editTextDescripcion.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId != EditorInfo.IME_ACTION_NEXT) {
+                return@setOnEditorActionListener false
+            }
 
-        /* val editText = findViewById<EditText>(R.id.descripcion_caja)
-         val editText2 = findViewById<EditText>(R.id.temporada_caja)
-         val temporada: String
-         if (editText2.text.toString().isEmpty()) {
-             if (editText2.hint == "TEMP") {
-                 editText2.hint = "SIN TEMPORADA"
-             }
-             temporada = editText2.hint.toString()
-         } else {
-             editText2.hint = editText2.text
-             temporada = editText2.hint.toString()
-         }
-         if (editText.text.toString().isEmpty()) {
-             if (editText.hint == "DESCRIPCIÓN") {
-                 editText.hint = "SIN DESCRIPCIÓN"
-             }
-             editText.setText(editText.hint)
-         } else {
-             editText.hint = editText.text
-         }
-         updateCajaDescTempAPI(
-             editText.text.toString().uppercase(Locale.ROOT),
-             temporada.uppercase(Locale.ROOT),
-             object : APIResponseCallback {
-                 override fun onSuccess(response: String) {}
-                 override fun onError(errorMessage: String) {
-                     Toast.makeText(this@GestionCajasAlmacen, errorMessage, Toast.LENGTH_LONG).show()
-                 }
-             }
-         )*/
+            if (editTextDescripcion.text.toString().equals(descripcionActual, ignoreCase = true)) {
+                return@setOnEditorActionListener false
+            }
+
+            botonGuardarDescTemp.isEnabled = true
+            botonGuardarDescTemp.isClickable = true
+            botonGuardarDescTemp.alpha = 1f
+            botonGuardarDescTemp.setBackgroundResource(R.drawable.border_line)
+
+            editTextTemporada.requestFocus()
+
+            return@setOnEditorActionListener true
+
+        }
+
+        editTextTemporada.setOnEditorActionListener { v, actionId, _ ->
+            if (actionId != EditorInfo.IME_ACTION_DONE) {
+                return@setOnEditorActionListener false
+            }
+
+            if (editTextTemporada.text.toString().equals(temporadaActual, ignoreCase = true)) {
+                return@setOnEditorActionListener false
+            }
+
+            botonGuardarDescTemp.isEnabled = true
+            botonGuardarDescTemp.isClickable = true
+            botonGuardarDescTemp.alpha = 1f
+            botonGuardarDescTemp.setBackgroundResource(R.drawable.border_line)
+
+            val imm = getSystemService(INPUT_METHOD_SERVICE)
+                    as InputMethodManager
+
+            imm.hideSoftInputFromWindow(
+                v.windowToken,
+                0
+            )
+
+            return@setOnEditorActionListener true
+        }
+
+        botonGuardarDescTemp.setOnClickListener {
+
+            updateCajaDescTempAPI(
+
+                editTextDescripcion.text.toString().uppercase(Locale.ROOT),
+                editTextTemporada.text.toString().uppercase(Locale.ROOT),
+                object : APIResponseCallback {
+
+                    override fun onSuccess(response: String) {
+                        Toast.makeText(this@GestionCajasAlmacen,"DESCRIPCION Y TEMPORADA ACTUALIZADAS", Toast.LENGTH_SHORT).show()
+
+                        editTextDescripcion.hint = editTextDescripcion.text.toString().uppercase()
+                        editTextTemporada.hint = editTextTemporada.text.toString().uppercase()
+
+                        editTextDescripcion.setText("")
+                        editTextTemporada.setText("")
+                    }
+
+                    override fun onError(errorMessage: String) {
+                        Toast.makeText(this@GestionCajasAlmacen, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                }
+            )
+        }
+
 
         prepararMenuCerrado()
 
@@ -428,7 +476,6 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
             bluetoothSocket?.connect()
             Log.d("Impresora Conectada", "Conectado a ${device.name}")
         } catch (e: IOException) {
-            cerrarConexionBluetooth()
             throw Exception("NO SE PUDO CONECTAR A LA IMPRESORA: ${e.message}")
         }
     }
@@ -457,19 +504,21 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
         }
     }
 
-    private fun getDescTempAPI() {
+    private fun getDescTempAPI(
+        onResult: (String, String) -> Unit
+    ) {
         RetrofitClient.getApiService(this)
             .getDescTempCaja(codigoAlmacen, idPalet, idCaja)
             .enqueue(object : Callback<DescTempCajaResponse> {
+
                 override fun onResponse(call: Call<DescTempCajaResponse>, response: Response<DescTempCajaResponse>) {
                     if (response.isSuccessful) {
-                        val body = response.body()
-                        if (body != null) {
-                            editTextTemporada.hint = body.temporada
-                            editTextTemporada.hint = body.descripcion
+                        response.body()?.let {
+                            onResult(
+                                it.descripcion,
+                                it.temporada
+                            )
                         }
-                    } else {
-                        Toast.makeText(this@GestionCajasAlmacen, "Error al obtener los almacenes", Toast.LENGTH_LONG).show()
                     }
                 }
 
@@ -512,22 +561,31 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
         RetrofitClient.getApiService(this)
             .getStockCaja(codigoAlmacen, idPalet, idCaja)
             .enqueue(object : Callback<StockCajaResponse> {
+
                 override fun onResponse(call: Call<StockCajaResponse>, response: Response<StockCajaResponse>) {
+
                     if (response.isSuccessful) {
+
                         val body = response.body()!!
+
                         if (body.stock.isNotEmpty()) {
+
                             collectionStock = body.stock.map { (ean, stock) ->
                                 AlmacenVirtualProducto(
                                     ean, stock.id, stock.color, stock.talla,
                                     stock.nombre, stock.temporada, stock.cantidad, 0
                                 )
                             }
+
                             productList.addAll(collectionStock)
                             productoAdapter = ProductoAdapter(productList, this@GestionCajasAlmacen)
+
                             recyclerView.adapter = productoAdapter
                             recyclerView.scheduleLayoutAnimation()
                             recyclerView.layoutParams.height = if (productList.size > 4) 1140 else -2
+
                             productoAdapter.notifyDataSetChanged()
+
                             totalProductosCaja.text = "TOTAL: ${body.total}"
                         }
                     }
@@ -551,13 +609,21 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
         recyclerView = findViewById(R.id.mostrar_productos)
         recyclerView.layoutManager = LinearLayoutManager(this)
         productList.clear()
+
         getStockCajaAPI()
+
         totalProductosCaja.text = "TOTAL: ${productList.size}"
     }
 
     @Deprecated("Deprecated in Java")
     @Suppress("DEPRECATION")
     override fun onBackPressed() {
+
+        if (menuVisible) {
+            cerrarMenuFlotante()
+            return
+        }
+
         super.onBackPressed()
     }
 

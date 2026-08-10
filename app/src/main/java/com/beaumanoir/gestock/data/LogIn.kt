@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.beaumanoir.gestock.R
@@ -39,6 +40,11 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     private lateinit var collectionAlmacen: List<Almacenes>
     private lateinit var almacenAdapter: AlmacenAdapter
     private val almacenList: MutableList<Almacenes> = ArrayList()
+
+    private lateinit var editTextNombreAlmacen: EditText
+    private lateinit var editTextCodigoAlmacen: EditText
+    private lateinit var btnCrearAlmacen: AppCompatButton
+    private lateinit var btnEliminarAlmacen: AppCompatButton
 
     interface APIResponseCallback {
         fun onError(errorMessage: String)
@@ -77,13 +83,21 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
                 .setView(view)
                 .create()
 
-            val editTextCodigoAlmacen = view.findViewById<EditText>(R.id.codigo_almacen)
-            val editTextNombreAlmacen = view.findViewById<EditText>(R.id.nombre_almacen)
+            editTextNombreAlmacen = view.findViewById<EditText>(R.id.nombre_almacen)
+            editTextCodigoAlmacen = view.findViewById<EditText>(R.id.codigo_almacen)
 
-            val btnCrear = view.findViewById<Button>(R.id.boton_crear_almacen)
-            val btnEliminar = view.findViewById<Button>(R.id.boton_eliminar_almacen)
+            btnCrearAlmacen = view.findViewById(R.id.boton_crear_almacen)
+            btnEliminarAlmacen = view.findViewById(R.id.boton_eliminar_almacen)
 
-            btnCrear.setOnClickListener {
+            editTextCodigoAlmacen.addTextChangedListener {
+                actualizarBotones()
+            }
+
+            editTextNombreAlmacen.addTextChangedListener {
+                actualizarBotones()
+            }
+
+            btnCrearAlmacen.setOnClickListener {
                 val codigoAlmacenCrear = editTextCodigoAlmacen.text.toString().toIntOrNull()
                 val nombreAlmacenCrear = editTextNombreAlmacen.text.toString()
 
@@ -112,7 +126,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
                 })
             }
 
-            btnEliminar.setOnClickListener {
+            btnEliminarAlmacen.setOnClickListener {
                 val codigoAlmacenEliminar = editTextCodigoAlmacen.text.toString()
 
                 if (codigoAlmacenEliminar.isEmpty()) {
@@ -152,13 +166,54 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
         findViewById<TextView>(R.id.textview_version).text =
             packageManager.getPackageInfo(packageName, 0).versionName
 
+    }
+
+    override fun onResume() {
+
         if (RetrofitClient.isConnectedToInternet(this)) {
             getAlmacenesAPI()
         } else {
             Toast.makeText(this, "NO TIENES CONEXIÓN A INTERNET", Toast.LENGTH_LONG).show()
         }
-    }
 
+        super.onResume()
+    }
+    private fun actualizarBotones() {
+
+        val codigoEntrado = editTextCodigoAlmacen.text.toString().trim().isNotEmpty()
+        val nombreEntrado = editTextNombreAlmacen.text.toString().trim().isNotEmpty()
+
+        when {
+
+            codigoEntrado && nombreEntrado -> {
+                
+                btnCrearAlmacen.isEnabled = true
+                btnCrearAlmacen.alpha = 1f
+                
+                btnEliminarAlmacen.isEnabled = false
+                btnEliminarAlmacen.alpha = 0.5f
+            }
+
+            codigoEntrado -> {
+            
+                btnCrearAlmacen.isEnabled = false
+                btnCrearAlmacen.alpha = 0.5f
+
+                btnEliminarAlmacen.isEnabled = true
+                btnEliminarAlmacen.alpha = 1f
+            }
+
+            else -> {
+                
+                btnCrearAlmacen.isEnabled = false
+                btnCrearAlmacen.alpha = 0.5f
+                
+                btnEliminarAlmacen.isEnabled = false
+                btnEliminarAlmacen.alpha = 0.5f
+            }
+        }
+
+    }
     private fun getAlmacenesAPI() {
         RetrofitClient.getApiService(this).getAlmacenes().enqueue(object : Callback<AlmacenResponse> {
             override fun onResponse(call: Call<AlmacenResponse>, response: Response<AlmacenResponse>) {
@@ -279,6 +334,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
         RetrofitClient.getApiService(this).deleteAlmacen(codigo).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (response.isSuccessful) {
+                    Log.d("Response API", response.toString())
                     val bodyString = response.body()?.string() ?: "Operación exitosa"
                     val msg = JSONObject(bodyString).getString("msg")
                     callback.onSuccess(msg)

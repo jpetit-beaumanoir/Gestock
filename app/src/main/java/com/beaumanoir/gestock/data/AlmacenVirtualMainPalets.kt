@@ -54,6 +54,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
     private lateinit var recyclerView: RecyclerView
     private var paletList: MutableList<AlmacenVirtualPalets> = ArrayList()
     private var nombreAlmacen: String = ""
+    private lateinit var drawerLayout: DrawerLayout
     private lateinit var textViewImportando: TextView
     private lateinit var progresBarImportando: ProgressBar
     private var recyclerPosition = 0
@@ -86,18 +87,19 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
 
         findViewById<TextView>(R.id.almacen_nombre).text = "$codigoAlmacen $nombreAlmacen"
 
+        // ============================================= CODI MENU LATERAL ============================================= //
         val navigationView = findViewById<NavigationView>(R.id.nav_menu)
         val headerView = navigationView.getHeaderView(0)
         headerView.findViewById<TextView>(R.id.nombre_almacen_navigation).text = nombreAlmacen
         headerView.findViewById<TextView>(R.id.codigo_almacen_navigation).text = codigoAlmacen.toString()
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.almacen_virtual_main_palets_linearlayout)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.linearlayout_almacen_virtual_main_palets)) { v, insets ->
             val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
+        drawerLayout = findViewById(R.id.drawer_layout_almacen_virtual_main_palets)
         val botonMenu = findViewById<AppCompatButton>(R.id.boton_menu)
         val toggle = ActionBarDrawerToggle(
             this,drawerLayout,null,
@@ -114,6 +116,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
                 drawerLayout.openDrawer(GravityCompat.END)
             }
         }
+        // ============================================================================================================= //
 
         recyclerView = findViewById(R.id.mostrar_palets_almacen)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -201,7 +204,6 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
                 } else {
                     Toast.makeText(this@AlmacenVirtualMainPalets, "NO TIENES CONEXIÓN A INTERNET", Toast.LENGTH_LONG).show()
                 }
-                adjustRecyclerViewHeight()
             }
         }
         ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView)
@@ -221,17 +223,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
                 Toast.makeText(this, "NO TIENES CONEXIÓN A INTERNET", Toast.LENGTH_LONG).show()
             }
             paletAdapter.notifyDataSetChanged()
-            adjustRecyclerViewHeight()
         }
-    }
-
-    private fun adjustRecyclerViewHeight() {
-        val height: Int = if (paletList.size > 5) {
-            1020
-        } else {
-            -2
-        }
-        recyclerView.layoutParams.height = height
     }
 
     override fun onItemClick(almacenVirtual: AlmacenVirtualPalets) {
@@ -240,7 +232,8 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
 
         val intent = Intent(this, AlmacenVirtualMainCajas::class.java)
         intent.putExtra("palet", almacenVirtual.palet)
-        intent.putExtra("almacen", codigoAlmacen)
+        intent.putExtra("codigo_almacen", codigoAlmacen)
+        intent.putExtra("nombre_almacen", nombreAlmacen)
         startActivity(intent)
     }
 
@@ -253,7 +246,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
             Toast.makeText(this, "NO TIENES CONEXIÓN A INTERNET", Toast.LENGTH_LONG).show()
         }
         paletAdapter.notifyDataSetChanged()
-        adjustRecyclerViewHeight()
+
         val cajas = paletList.sumOf { it.cajas }
         if (cajas > 0) {
             eanCajaEntrat.isFocusable = true
@@ -298,7 +291,6 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
                             paletAdapter = PaletAdapter(paletList, this@AlmacenVirtualMainPalets)
                             recyclerView.adapter = paletAdapter
                             recyclerView.scheduleLayoutAnimation()
-                            adjustRecyclerViewHeight()
                         }
                     } else if (response.code() != 404) {
                         Toast.makeText(this@AlmacenVirtualMainPalets, "Error al obtener los palets", Toast.LENGTH_LONG).show()
@@ -340,7 +332,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
+        val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout_almacen_virtual_main_palets)
         when (item.itemId) {
             R.id.boton_exportar_stock -> {
                 val intent = Intent(this@AlmacenVirtualMainPalets, StockSearch::class.java)
@@ -395,7 +387,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
                         val caja = file.name.substring(8, 12).toInt()
                         if (almacen == codigoAlmacen) {
                             try {
-                                checkCajaExists(this, almacen, palet, caja, file.readLines(), file)
+                                Menu.checkCajaExists(this, almacen, palet, caja, file.readLines(), file)
                             } catch (e: Exception) {
                                 Toast.makeText(this, "Error procesando archivo ${file.name}", Toast.LENGTH_SHORT).show()
                             }
@@ -408,235 +400,6 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
         }
         drawerLayout.closeDrawer(GravityCompat.END)
         return true
-    }
-
-    private fun checkCajaExists(context: Context, almacen: Int, palet: Int, caja: Int, eans: List<String>, file: File) {
-        RetrofitClient.getApiService(context).existCaja(almacen, palet, caja)
-            .enqueue(object : Callback<CajaExiste> {
-                override fun onResponse(call: Call<CajaExiste>, response: Response<CajaExiste>) {
-                    if (response.isSuccessful) {
-                        checkStockExists(almacen, palet, caja, eans, context, file)
-                    } else {
-                        Toast.makeText(context, "Caja $caja del palet $palet, no encontrada", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<CajaExiste>, t: Throwable) {
-                    val message = t.message?.lowercase(Locale.ROOT)
-                    if (message != null && message.contains("unable to resolve host")) {
-                        Toast.makeText(context, "No tienes conexión a internet", Toast.LENGTH_LONG).show()
-                    } else {
-                        Toast.makeText(context, "Error " + t.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            })
-    }
-
-    private fun checkStockExists(almacen: Int, palet: Int, caja: Int, eans: List<String>, context: Context, file: File) {
-        val dialog = AlertDialog.Builder(context)
-            .setTitle("Procesando EANs")
-            .setMessage("Por favor, espera...")
-            .setCancelable(false)
-            .setView(ProgressBar(context).apply { isIndeterminate = true })
-            .create()
-        dialog.show()
-
-        val distinct = eans.distinct()
-        val notFound = ArrayList<String>()
-        var processed = 0
-        var stop = false
-
-        for (ean in distinct) {
-            if (stop) return
-            getValuesfromProductoAPI(ean, context, object : AñadirProductoCaja.APIResponseCallback {
-                override fun onSuccess(result: ProductValues) {
-                    if (stop) return
-                    processed++
-                    if (processed != distinct.size) return
-                    if (notFound.isEmpty()) {
-                        getStockCajaFromAPI(almacen, palet, caja, eans, context, file)
-                        dialog.dismiss()
-                    } else {
-                        dialog.dismiss()
-                        showNotFoundDialog(context, notFound)
-                    }
-                }
-
-                override fun onError(errorMessage: String) {
-                    if (errorMessage.contains("demasiadas peticiones", true)) {
-                        stop = true
-                        dialog.dismiss()
-                        Toast.makeText(context, "Demasiadas peticiones, contacta con el administrador para aumentar la tasa", Toast.LENGTH_LONG).show()
-                    } else {
-                        if (stop) return
-                        notFound.add(ean)
-                        processed++
-                        if (processed == distinct.size) {
-                            dialog.dismiss()
-                            showNotFoundDialog(context, notFound)
-                        }
-                    }
-                }
-            })
-        }
-    }
-
-    private fun showNotFoundDialog(context: Context, notFound: List<String>) {
-        val message = buildString {
-            append("No se puede importar el archivo porque hay productos no encontrados.\n\n")
-            append("Productos no encontrados: ${notFound.size}\n\n")
-            append(notFound.joinToString("\n"))
-        }
-        AlertDialog.Builder(context)
-            .setTitle("Error de importación")
-            .setMessage(message)
-            .setPositiveButton("OK", null)
-            .show()
-    }
-
-    private fun getValuesfromProductoAPI(ean: String, context: Context, callback: AñadirProductoCaja.APIResponseCallback) {
-        RetrofitClient.getApiService(context).getProductValues(ean, codigoAlmacen)
-            .enqueue(object : Callback<ProductValues> {
-                override fun onResponse(call: Call<ProductValues>, response: Response<ProductValues>) {
-                    if (response.isSuccessful) {
-                        val body = response.body()
-                        if (body != null) {
-                            callback.onSuccess(body)
-                        } else {
-                            callback.onError("No se ha encontrado información de este producto")
-                        }
-                    } else if (response.code() == 429) {
-                        callback.onError("Se han realizado demasiadas peticiones. Contacta con el administrador si es necesario aumentarlas")
-                    } else {
-                        val errorString = response.errorBody()?.string() ?: "Error desconocido"
-                        try {
-                            callback.onError(JSONObject(errorString).optString("detail", "Error: $errorString"))
-                        } catch (e: Exception) {
-                            callback.onError("Error: $errorString")
-                        }
-                    }
-                }
-
-                override fun onFailure(call: Call<ProductValues>, t: Throwable) {
-                    val message = t.message?.lowercase(Locale.ROOT)
-                    if (message != null && message.contains("unable to resolve host")) {
-                        callback.onError("No tienes conexión a internet")
-                    } else {
-                        callback.onError("Error " + t.message)
-                    }
-                }
-            })
-    }
-
-    private fun getStockCajaFromAPI(almacen: Int, palet: Int, caja: Int, eans: List<String>, context: Context, file: File) {
-        RetrofitClient.getApiService(context).getStockCaja(almacen, palet, caja)
-            .enqueue(object : Callback<StockCajaResponse> {
-                override fun onResponse(call: Call<StockCajaResponse>, response: Response<StockCajaResponse>) {
-                    if (response.isSuccessful) {
-                        val body = response.body()!!
-                        var productIds: List<Int> = emptyList()
-                        if (body.stock.isNotEmpty()) {
-                            productIds = body.stock.map { (ean, stock) ->
-                                AlmacenVirtualProducto(
-                                    ean, stock.id, stock.color, stock.talla,
-                                    stock.nombre, stock.temporada, stock.cantidad, 0
-                                )
-                            }.flatMap { it.id }
-                        }
-                        val size = eans.size
-                        AlertDialog.Builder(context)
-                            .setTitle("Palet $palet Caja $caja")
-                            .setMessage("RFID: $size productos\nGESTOCK: ${body.total} productos\n\n¿Desea sobreescribir la caja?")
-                            .setPositiveButton("Sí") { d, _ ->
-                                d.dismiss()
-                                if (productIds.isNotEmpty()) {
-                                    deleteStockAPI(productIds, palet, caja)
-                                }
-                                addStockAPI(eans, palet, caja)
-                                file.delete()
-                            }
-                            .setNegativeButton("No") { d, _ -> d.dismiss() }
-                            .show()
-                    } else {
-                        Toast.makeText(context, "Error stock: ${response.code()}", Toast.LENGTH_LONG).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<StockCajaResponse>, t: Throwable) {
-                    Toast.makeText(context, "Error en stock: " + t.message, Toast.LENGTH_LONG).show()
-                }
-            })
-    }
-
-    private fun addStockAPI(eans: List<String>, palet: Int, caja: Int) {
-        RetrofitClient.getApiService(this)
-            .addStock(AddStockRequest(codigoAlmacen, palet, caja, eans))
-            .enqueue(object : Callback<ResponseBody> {
-                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                    if (response.isSuccessful) {
-                        updateCantidadCajaAPI(palet, caja)
-                        Toast.makeText(applicationContext, "${eans.size} Productos añadidos", Toast.LENGTH_SHORT).show()
-                    } else {
-                        val errorString = response.errorBody()?.string() ?: "Error desconocido"
-                        Toast.makeText(this@AlmacenVirtualMainPalets, "Error ${response.code()}: $errorString", Toast.LENGTH_LONG).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    val message = t.message?.lowercase(Locale.ROOT)
-                    if (message != null && message.contains("unable to resolve host")) {
-                        Toast.makeText(this@AlmacenVirtualMainPalets, "No tienes conexión a internet", Toast.LENGTH_LONG).show()
-                    } else {
-                        Toast.makeText(this@AlmacenVirtualMainPalets, "Error: " + t.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            })
-    }
-
-    private fun deleteStockAPI(deleteIds: List<Int>, palet: Int, caja: Int) {
-        RetrofitClient.getApiService(this)
-            .deleteStock(DeleteStockRequest(codigoAlmacen, palet, caja, deleteIds))
-            .enqueue(object : Callback<ResponseBody> {
-                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                    if (response.isSuccessful) {
-                        updateCantidadCajaAPI(palet, caja)
-                    } else {
-                        val errorString = response.errorBody()?.string() ?: "Error desconocido"
-                        Toast.makeText(this@AlmacenVirtualMainPalets, JSONObject(errorString).getString("detail"), Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    val message = t.message?.lowercase(Locale.ROOT)
-                    if (message != null && message.contains("unable to resolve host")) {
-                        Toast.makeText(this@AlmacenVirtualMainPalets, "No tienes conexión a internet", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(this@AlmacenVirtualMainPalets, "Error: " + t.message, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            })
-    }
-
-    private fun updateCantidadCajaAPI(palet: Int, caja: Int) {
-        RetrofitClient.getApiService(this)
-            .updateCantidadCaja(codigoAlmacen, palet, caja)
-            .enqueue(object : Callback<ResponseBody> {
-                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                    if (!response.isSuccessful) {
-                        val errorString = response.errorBody()?.string() ?: "Error desconocido"
-                        Toast.makeText(this@AlmacenVirtualMainPalets, "Error ${response.code()}: $errorString", Toast.LENGTH_LONG).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    val message = t.message?.lowercase(Locale.ROOT)
-                    if (message != null && message.contains("unable to resolve host")) {
-                        Toast.makeText(this@AlmacenVirtualMainPalets, "No tienes conexión a internet", Toast.LENGTH_LONG).show()
-                    } else {
-                        Toast.makeText(this@AlmacenVirtualMainPalets, "Error: " + t.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            })
     }
 
     private fun uploadCSV(file: File, brandName: String) {
@@ -688,5 +451,17 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
                 Toast.makeText(this, "Permiso de almacenamiento denegado", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    @Deprecated("Deprecated in Java")
+    @Suppress("DEPRECATION")
+    override fun onBackPressed() {
+
+        if (drawerLayout.isDrawerOpen(GravityCompat.END)) {
+            drawerLayout.closeDrawer(GravityCompat.END)
+            return
+        }
+
+        super.onBackPressed()
     }
 }
