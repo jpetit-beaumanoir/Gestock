@@ -1,5 +1,6 @@
 package com.beaumanoir.gestock.data
 
+import android.animation.ObjectAnimator
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -36,7 +37,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
 
     private lateinit var botonOpcionesAlmacenes: AppCompatButton
     private lateinit var nombreAlmacen: String
-    private var codigoAlmacen: Int = 0
+    private lateinit var codigoAlmacen: String
     private lateinit var collectionAlmacen: List<Almacenes>
     private lateinit var almacenAdapter: AlmacenAdapter
     private val almacenList: MutableList<Almacenes> = ArrayList()
@@ -49,7 +50,12 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     interface APIResponseCallback {
         fun onError(errorMessage: String)
         fun onSuccess(response: String)
+
     }
+
+    CAMBIAR LA TAULA ALMACENES PERQUE EL CODI SIGUI UNA STRING EN COMPTES DE UN INT PER CASOS DE 0000 MOSTRI ELS 4 DIGITS I NO NOMES 0
+
+    PRIMER MODIFICAR LA TAULA SQL PER QUE SIGUI VARCHAR(4)
 
     interface LoginCallback {
         fun onLoginFailure(errorMessage: String)
@@ -73,6 +79,15 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
         }
 
         setContentView(R.layout.log_in)
+
+        val refreshButton = findViewById<AppCompatButton>(R.id.refresh_button_almacenes)
+        refreshButton.setOnClickListener {
+            ObjectAnimator.ofFloat(refreshButton, "rotation", 0.0f, 360.0f).apply {
+                duration = 700L
+                start()
+            }
+            getAlmacenesAPI()
+        }
 
         botonOpcionesAlmacenes = findViewById(R.id.boton_opciones_login)
         botonOpcionesAlmacenes.setOnClickListener {
@@ -98,10 +113,10 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
             }
 
             btnCrearAlmacen.setOnClickListener {
-                val codigoAlmacenCrear = editTextCodigoAlmacen.text.toString().toIntOrNull()
+                val codigoAlmacenCrear = editTextCodigoAlmacen.text.toString()
                 val nombreAlmacenCrear = editTextNombreAlmacen.text.toString()
 
-                if (codigoAlmacenCrear == null || nombreAlmacenCrear.isEmpty()) {
+                if (codigoAlmacenCrear.isEmpty() || nombreAlmacenCrear.isEmpty()) {
                     Toast.makeText(this, "Especifica nombre y codigo antes de crear", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
@@ -215,7 +230,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
 
     }
     private fun getAlmacenesAPI() {
-        RetrofitClient.getApiService(this).getAlmacenes().enqueue(object : Callback<AlmacenResponse> {
+        RetrofitClient.getApiService().getAlmacenes().enqueue(object : Callback<AlmacenResponse> {
             override fun onResponse(call: Call<AlmacenResponse>, response: Response<AlmacenResponse>) {
                 if (response.isSuccessful) {
                     val body = response.body()
@@ -273,7 +288,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     }
 
     private fun login(callback: LoginCallback) {
-        RetrofitClient.getApiService(this).loginAlmacen(codigoAlmacen).enqueue(object : Callback<ResponseBody> {
+        RetrofitClient.getApiService().loginAlmacen(codigoAlmacen).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (response.isSuccessful) {
                     callback.onLoginSuccess(nombreAlmacen)
@@ -298,8 +313,8 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
         })
     }
 
-    private fun createAlmacenesAPI(nombre: String, codigo: Int, callback: APIResponseCallback) {
-        RetrofitClient.getApiService(this).createAlmacen(AlmacenCreateRequest(nombre, codigo))
+    private fun createAlmacenesAPI(nombre: String, codigo: String, callback: APIResponseCallback) {
+        RetrofitClient.getApiService().createAlmacen(AlmacenCreateRequest(nombre, codigo))
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     if (response.isSuccessful) {
@@ -331,7 +346,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     }
 
     private fun deleteAlmacenesAPI(codigo: Int, callback: APIResponseCallback) {
-        RetrofitClient.getApiService(this).deleteAlmacen(codigo).enqueue(object : Callback<ResponseBody> {
+        RetrofitClient.getApiService().deleteAlmacen(codigo).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (response.isSuccessful) {
                     Log.d("Response API", response.toString())

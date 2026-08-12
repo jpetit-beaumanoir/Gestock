@@ -34,6 +34,8 @@ class AñadirProductoCaja : AppCompatActivity(), ProductoAdapter.OnItemClickList
     private lateinit var recyclerView: RecyclerView
     private val productAddAdapterList: MutableList<AlmacenVirtualProducto> = ArrayList()
     private val eansAfegirList: MutableList<String> = ArrayList()
+    private lateinit var botonConfirmar: AppCompatButton
+    private lateinit var botonCancelar: AppCompatButton
 
     interface APIResponseCallback {
         fun onError(errorMessage: String)
@@ -58,6 +60,9 @@ class AñadirProductoCaja : AppCompatActivity(), ProductoAdapter.OnItemClickList
 
         recyclerView = findViewById(R.id.mostrar_productos_anadir)
         recyclerView.layoutManager = LinearLayoutManager(this)
+
+        botonCancelar = findViewById(R.id.cancelar_adicion_productos)
+        botonConfirmar = findViewById(R.id.confirmar_adicion_productos)
 
         val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, 12) {
             override fun onMove(
@@ -139,7 +144,7 @@ class AñadirProductoCaja : AppCompatActivity(), ProductoAdapter.OnItemClickList
             }
         })
 
-        findViewById<AppCompatButton>(R.id.cancelar_adicion_productos).setOnClickListener {
+        botonCancelar.setOnClickListener {
             if (eansAfegirList.isNotEmpty()) {
                 AlertDialog.Builder(this)
                     .setTitle("¿SEGURO QUE QUIERES CANCELAR?")
@@ -153,7 +158,7 @@ class AñadirProductoCaja : AppCompatActivity(), ProductoAdapter.OnItemClickList
             }
         }
 
-        findViewById<AppCompatButton>(R.id.confirmar_adicion_productos).setOnClickListener {
+        botonConfirmar.setOnClickListener {
             if (eansAfegirList.isNotEmpty()) {
                 addStockAPI(eansAfegirList)
             }
@@ -247,4 +252,12 @@ class AñadirProductoCaja : AppCompatActivity(), ProductoAdapter.OnItemClickList
                 }
             })
     }
+
+    override fun onBackPressed() {
+
+        botonCancelar.callOnClick()
+
+        super.onBackPressed()
+    }
+
 }

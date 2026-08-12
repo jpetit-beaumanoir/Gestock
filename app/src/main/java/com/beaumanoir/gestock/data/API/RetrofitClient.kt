@@ -23,44 +23,6 @@ object RetrofitClient {
     private const val API_KEY = "p9WAIq8tJjWdOI3beUhpr8MN3XYjE1aLpEvif6QmqsESGHgpvxjz7odgvgiuBoF4"
     private const val BASE_URL = "https://gestock.ignorelist.com/gestock/"
 
-
-    /*private fun getSslContext(context: Context): Pair<SSLContext, X509TrustManager> {
-        val certificateFactory = CertificateFactory.getInstance("X.509")
-
-        val inputStream: InputStream =
-            context.resources.openRawResource(R.raw.gestock_chain)
-
-        val certificates: Collection<Certificate> =
-            certificateFactory.generateCertificates(inputStream)
-
-        inputStream.close()
-
-        val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
-        keyStore.load(null)
-
-        var index = 0
-        for (certificate in certificates) {
-            keyStore.setCertificateEntry("ca$index", certificate)
-            index++
-        }
-
-        val trustManagerFactory =
-            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-
-        trustManagerFactory.init(keyStore)
-
-        val trustManager = trustManagerFactory.trustManagers[0] as X509TrustManager
-
-        val sslContext = SSLContext.getInstance("TLS")
-        sslContext.init(
-            null,
-            arrayOf(trustManager),
-            null
-        )
-
-        return Pair(sslContext, trustManager)
-    } */
-
     private class ApiKeyInterceptor : Interceptor {
 
         override fun intercept(chain: Interceptor.Chain): Response {
@@ -73,7 +35,7 @@ object RetrofitClient {
         }
     }
 
-    private fun getRetrofit(context: Context): Retrofit {
+    private fun getRetrofit(): Retrofit {
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(ApiKeyInterceptor())
             .writeTimeout(90L, TimeUnit.SECONDS)
@@ -89,8 +51,8 @@ object RetrofitClient {
     }
 
 
-    fun getApiService(context: Context): Endpoints {
-        return getRetrofit(context).create(Endpoints::class.java)
+    fun getApiService(): Endpoints {
+        return getRetrofit().create(Endpoints::class.java)
     }
 
     fun isConnectedToInternet(context: Context): Boolean {
