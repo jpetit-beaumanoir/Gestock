@@ -163,7 +163,7 @@ class MoverProductosCaja : AppCompatActivity(), ProductoAdapter.OnItemClickListe
     }
 
     private fun moveStockAPI(callback: APIResponseCallback) {
-        RetrofitClient.getApiService(this)
+        RetrofitClient.getApiService()
             .moveStock(MoveStockRequest(codigoAlmacen, paletDestino, cajaDestino, scannedProductIds.toList()))
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -191,7 +191,7 @@ class MoverProductosCaja : AppCompatActivity(), ProductoAdapter.OnItemClickListe
     }
 
     private fun updateCantidadCajaAPI(palet: Int, caja: Int) {
-        RetrofitClient.getApiService(this)
+        RetrofitClient.getApiService()
             .updateCantidadCaja(codigoAlmacen, palet, caja)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {

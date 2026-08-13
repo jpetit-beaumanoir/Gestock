@@ -301,7 +301,7 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
     }
 
     private fun getCajasAPI() {
-        RetrofitClient.getApiService(this).getCajas(codigoAlmacen, idPalet)
+        RetrofitClient.getApiService().getCajas(codigoAlmacen, idPalet)
             .enqueue(object : Callback<CajasResponse> {
                 override fun onResponse(call: Call<CajasResponse>, response: Response<CajasResponse>) {
                     if (response.isSuccessful) {
@@ -335,7 +335,7 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
     }
 
     private fun createCajaAPI(callback: APIResponseCallback) {
-        RetrofitClient.getApiService(this).createCaja(codigoAlmacen, idPalet)
+        RetrofitClient.getApiService().createCaja(codigoAlmacen, idPalet)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     if (response.isSuccessful) {
@@ -358,7 +358,7 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
     }
 
     private fun deleteCajaAPI(caja: Int, callback: APIResponseCallback) {
-        RetrofitClient.getApiService(this).deleteCaja(codigoAlmacen, idPalet, caja)
+        RetrofitClient.getApiService().deleteCaja(codigoAlmacen, idPalet, caja)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     if (response.isSuccessful) {
@@ -458,7 +458,7 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
             file.asRequestBody("text/csv".toMediaTypeOrNull())
         )
         val brandBody = brandName.toRequestBody("text/plain".toMediaTypeOrNull())
-        RetrofitClient.getApiService(this).subirCatalogo(csvPart, brandBody)
+        RetrofitClient.getApiService().subirCatalogo(csvPart, brandBody)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     textViewImportando.visibility = View.GONE

@@ -507,7 +507,7 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
     private fun getDescTempAPI(
         onResult: (String, String) -> Unit
     ) {
-        RetrofitClient.getApiService(this)
+        RetrofitClient.getApiService()
             .getDescTempCaja(codigoAlmacen, idPalet, idCaja)
             .enqueue(object : Callback<DescTempCajaResponse> {
 
@@ -534,7 +534,7 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
     }
 
     private fun updateCajaDescTempAPI(descripcion: String, temporada: String = "SIN TEMPORADA", callback: APIResponseCallback) {
-        RetrofitClient.getApiService(this)
+        RetrofitClient.getApiService()
             .updateDescTempCaja(codigoAlmacen, idPalet, idCaja, descripcion, temporada)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -558,7 +558,7 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
     }
 
     private fun getStockCajaAPI() {
-        RetrofitClient.getApiService(this)
+        RetrofitClient.getApiService()
             .getStockCaja(codigoAlmacen, idPalet, idCaja)
             .enqueue(object : Callback<StockCajaResponse> {
 

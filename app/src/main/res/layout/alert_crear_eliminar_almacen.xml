@@ -44,6 +44,10 @@
             android:layout_margin="10dp"
 
             android:hint="Nombre"
+            android:textStyle="bold"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07"
+
             android:maxLines="1"
             android:maxLength="14"
             android:inputType="text"
@@ -58,6 +62,10 @@
             android:layout_margin="10dp"
 
             android:hint="Código"
+            android:textStyle="bold"
+            android:fontFamily="@font/abhaya_libre"
+            android:letterSpacing="0.07"
+
             android:maxLines="1"
             android:maxLength="4"
             android:inputType="number"
@@ -103,11 +111,43 @@
             android:alpha="0.5"
             android:enabled="false"
 
+            android:text="CREAR"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:text="CREAR"
             android:fontFamily="@font/abhaya_libre"
             android:letterSpacing="0.07"/>
     </LinearLayout>
+
+    <EditText
+        android:id="@+id/key_usuari"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+
+        android:hint="ApiKey"
+        android:textStyle="bold"
+        android:fontFamily="@font/abhaya_libre"
+        android:letterSpacing="0.07"
+
+        android:visibility="visible"
+
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:inputType="textPassword"
+        android:imeOptions="actionDone"/>
+
+    <TextView
+        android:id="@+id/usuari_registrat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:gravity="center"
+
+        android:text="ANÓNIMO"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:fontFamily="@font/abhaya_libre"
+        android:letterSpacing="0.07" />
 
 </LinearLayout>

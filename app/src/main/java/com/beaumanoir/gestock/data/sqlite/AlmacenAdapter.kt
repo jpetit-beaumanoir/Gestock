@@ -48,10 +48,11 @@ class AlmacenAdapter(
     override fun onBindViewHolder(holder: AlmacenViewHolder, position: Int) {
         val almacen = almacenVirtualList[position]
         holder.nombreAlmacenTextView.text = almacen.nombre.uppercase()
-        holder.codigoAlmacenTextView.text = almacen.codigo.toString()
+        holder.codigoAlmacenTextView.text = almacen.codigo.toString().padStart(4, '0')
         holder.paletsAlmacenTextView.text = almacen.palets.toString()
         holder.cajasAlmacenTextView.text = almacen.cajas.toString()
         holder.cantidadAlmacenTextView.text = almacen.cantidad.toString()
+
         if (holder.cantidadAlmacenTextView.length() > 5 ||
             holder.paletsAlmacenTextView.length() > 3 ||
             holder.cajasAlmacenTextView.length() > 4

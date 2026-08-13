@@ -117,7 +117,7 @@ class EliminarProductoCaja : AppCompatActivity(), EliminarProductoAdapter.OnItem
     }
 
     private fun deleteStockAPI() {
-        RetrofitClient.getApiService(this)
+        RetrofitClient.getApiService()
             .deleteStock(DeleteStockRequest(codigoAlmacen, idPalet, idCaja, scannedProductIds))
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -143,7 +143,7 @@ class EliminarProductoCaja : AppCompatActivity(), EliminarProductoAdapter.OnItem
     }
 
     private fun updateCantidadCajaAPI() {
-        RetrofitClient.getApiService(this)
+        RetrofitClient.getApiService()
             .updateCantidadCaja(codigoAlmacen, idPalet, idCaja)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {

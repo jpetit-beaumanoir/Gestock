@@ -7,8 +7,11 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,7 +40,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
 
     private lateinit var botonOpcionesAlmacenes: AppCompatButton
     private lateinit var nombreAlmacen: String
-    private lateinit var codigoAlmacen: String
+    private var codigoAlmacen: Int = 0
     private lateinit var collectionAlmacen: List<Almacenes>
     private lateinit var almacenAdapter: AlmacenAdapter
     private val almacenList: MutableList<Almacenes> = ArrayList()
@@ -46,24 +49,27 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     private lateinit var editTextCodigoAlmacen: EditText
     private lateinit var btnCrearAlmacen: AppCompatButton
     private lateinit var btnEliminarAlmacen: AppCompatButton
+    private lateinit var editTextKey: EditText
+    private lateinit var usuariTextView: TextView
+    private var apiKeyGuardada: Boolean = false
 
     interface APIResponseCallback {
         fun onError(errorMessage: String)
         fun onSuccess(response: String)
-
     }
 
-    CAMBIAR LA TAULA ALMACENES PERQUE EL CODI SIGUI UNA STRING EN COMPTES DE UN INT PER CASOS DE 0000 MOSTRI ELS 4 DIGITS I NO NOMES 0
-
-    PRIMER MODIFICAR LA TAULA SQL PER QUE SIGUI VARCHAR(4)
-
-    interface LoginCallback {
-        fun onLoginFailure(errorMessage: String)
-        fun onLoginSuccess(nombre: String)
+    interface UserValidCallback {
+        fun onUserFailure(errorMessage: String)
+        fun onUserSuccess(user: String)
     }
+
+    ARREGLAR LA RESPOSTA DEL SERVIDOR PER RETORNAR FORBIDEN EN COMTPES DE NO S'HAN TROBAT MAGATZEMS
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        apiKeyGuardada = prefs.getString("api_key_gestock", null)?.isNotEmpty() ?: false
 
         permissionLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
@@ -86,10 +92,11 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
                 duration = 700L
                 start()
             }
-            getAlmacenesAPI()
+            onResume()
         }
 
         botonOpcionesAlmacenes = findViewById(R.id.boton_opciones_login)
+
         botonOpcionesAlmacenes.setOnClickListener {
 
             val view = layoutInflater.inflate(R.layout.alert_crear_eliminar_almacen, null)
@@ -98,8 +105,12 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
                 .setView(view)
                 .create()
 
-            editTextNombreAlmacen = view.findViewById<EditText>(R.id.nombre_almacen)
-            editTextCodigoAlmacen = view.findViewById<EditText>(R.id.codigo_almacen)
+            editTextNombreAlmacen = view.findViewById(R.id.nombre_almacen)
+            editTextCodigoAlmacen = view.findViewById(R.id.codigo_almacen)
+
+            editTextKey = view.findViewById(R.id.key_usuari)
+            usuariTextView = view.findViewById(R.id.usuari_registrat)
+            usuariTextView.text = prefs.getString("user", "")
 
             btnCrearAlmacen = view.findViewById(R.id.boton_crear_almacen)
             btnEliminarAlmacen = view.findViewById(R.id.boton_eliminar_almacen)
@@ -112,11 +123,39 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
                 actualizarBotones()
             }
 
+            editTextKey.setOnEditorActionListener { _, actionId, _ ->
+                if (actionId != EditorInfo.IME_ACTION_DONE) {
+                    return@setOnEditorActionListener false
+                }
+
+                validarUsuari(editTextKey.text.toString(), object : UserValidCallback {
+                    override fun onUserSuccess(user: String) {
+
+                        prefs.edit()
+                            .putString("api_key_gestock", editTextKey.text.toString())
+                            .putString("user", user)
+                            .apply()
+
+                        dialog.dismiss()
+
+                        apiKeyGuardada = true
+                        onResume()
+                    }
+
+                    override fun onUserFailure(errorMessage: String) {
+                        Toast.makeText(this@LogIn, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                })
+
+                return@setOnEditorActionListener true
+
+            }
+
             btnCrearAlmacen.setOnClickListener {
-                val codigoAlmacenCrear = editTextCodigoAlmacen.text.toString()
+                val codigoAlmacenCrear = editTextCodigoAlmacen.text.toString().toIntOrNull()
                 val nombreAlmacenCrear = editTextNombreAlmacen.text.toString()
 
-                if (codigoAlmacenCrear.isEmpty() || nombreAlmacenCrear.isEmpty()) {
+                if (codigoAlmacenCrear == null || nombreAlmacenCrear.isEmpty()) {
                     Toast.makeText(this, "Especifica nombre y codigo antes de crear", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
@@ -186,7 +225,13 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     override fun onResume() {
 
         if (RetrofitClient.isConnectedToInternet(this)) {
-            getAlmacenesAPI()
+            if (!apiKeyGuardada) {
+                botonOpcionesAlmacenes.callOnClick()
+                Toast.makeText(this, "INTRODUCE UNA APIKEY", Toast.LENGTH_LONG).show()
+            } else {
+                getAlmacenesAPI()
+            }
+
         } else {
             Toast.makeText(this, "NO TIENES CONEXIÓN A INTERNET", Toast.LENGTH_LONG).show()
         }
@@ -249,7 +294,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
                     recyclerView.adapter = almacenAdapter
                     recyclerView.scheduleLayoutAnimation()
                 } else {
-                    Toast.makeText(this@LogIn, "Error al obtener los almacenes", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@LogIn, "Error al obtener los almacenes: ${response.message()}", Toast.LENGTH_LONG).show()
                 }
             }
 
@@ -270,15 +315,15 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
         nombreAlmacen = almacenVirtual.nombre
         codigoAlmacen = almacenVirtual.codigo
         if (RetrofitClient.isConnectedToInternet(this)) {
-            login(object : LoginCallback {
-                override fun onLoginSuccess(nombre: String) {
+            login(object : APIResponseCallback {
+                override fun onSuccess(nombre: String) {
                     val intent = Intent(this@LogIn, AlmacenVirtualMainPalets::class.java)
                     intent.putExtra("codigo_almacen", codigoAlmacen)
                     intent.putExtra("nombre_almacen", nombre)
                     startActivity(intent)
                 }
 
-                override fun onLoginFailure(errorMessage: String) {
+                override fun onError(errorMessage: String) {
                     Toast.makeText(this@LogIn, errorMessage, Toast.LENGTH_LONG).show()
                 }
             })
@@ -287,17 +332,17 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
         }
     }
 
-    private fun login(callback: LoginCallback) {
+    private fun login(callback: APIResponseCallback) {
         RetrofitClient.getApiService().loginAlmacen(codigoAlmacen).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (response.isSuccessful) {
-                    callback.onLoginSuccess(nombreAlmacen)
+                    callback.onSuccess(nombreAlmacen)
                 } else {
                     try {
                         val detail = JSONObject(response.errorBody()?.string().toString()).getString("detail")
-                        callback.onLoginFailure(detail)
+                        callback.onError(detail)
                     } catch (e: Exception) {
-                        callback.onLoginFailure("Error desconocido: " + e.localizedMessage)
+                        callback.onError("Error desconocido: " + e.localizedMessage)
                     }
                 }
             }
@@ -305,15 +350,51 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                 val message = t.message?.lowercase(Locale.ROOT)
                 if (message != null && message.contains("unable to resolve host")) {
-                    callback.onLoginFailure("No tienes conexión a internet")
+                    callback.onError("No tienes conexión a internet")
                 } else {
-                    callback.onLoginFailure("Error de conexión: " + t.localizedMessage)
+                    callback.onError("Error de conexión: " + t.localizedMessage)
                 }
             }
         })
     }
 
-    private fun createAlmacenesAPI(nombre: String, codigo: String, callback: APIResponseCallback) {
+    private fun validarUsuari(key: String, callback: UserValidCallback) {
+        RetrofitClient.getApiService().validarUser(key).enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(
+                call: Call<ResponseBody>,
+                response: Response<ResponseBody>
+            ) {
+                if (response.isSuccessful) {
+
+                    val user = JSONObject(response.body()!!.string()).getString("user")
+
+                    usuariTextView.text = user.toString()
+
+                    callback.onUserSuccess(user)
+
+                } else {
+
+                    try {
+                        val detail = JSONObject(response.errorBody()?.string().toString()).getString("detail")
+                        callback.onUserFailure(detail)
+                    } catch (e: Exception) {
+                        callback.onUserFailure("Error desconocido: " + e.localizedMessage)
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                val message = t.message?.lowercase(Locale.ROOT)
+                if (message != null && message.contains("unable to resolve host")) {
+                    callback.onUserFailure("No tienes conexión a internet")
+                } else {
+                    callback.onUserFailure("Error de conexión: " + t.localizedMessage)
+                }
+            }
+        })
+    }
+
+    private fun createAlmacenesAPI(nombre: String, codigo: Int, callback: APIResponseCallback) {
         RetrofitClient.getApiService().createAlmacen(AlmacenCreateRequest(nombre, codigo))
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {

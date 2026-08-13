@@ -1,5 +1,6 @@
 package com.beaumanoir.gestock.data.API
 
+import android.R
 import com.beaumanoir.gestock.data.AddStockRequest
 import com.beaumanoir.gestock.data.AlmacenCreateRequest
 import com.beaumanoir.gestock.data.AlmacenResponse
@@ -40,13 +41,13 @@ interface Endpoints {
 
     @POST("/gestock/cajas/create")
     fun createCaja(
-        @Query("almacen") almacen: String,
+        @Query("almacen") almacen: Int,
         @Query("palet") palet: Int
     ): Call<ResponseBody>
 
     @POST("/gestock/palets/create")
     fun createPalet(
-        @Query("almacen") almacen: String
+        @Query("almacen") almacen: Int
     ): Call<ResponseBody>
 
     @DELETE("/gestock/almacenes/delete")
@@ -56,14 +57,14 @@ interface Endpoints {
 
     @DELETE("/gestock/cajas/delete")
     fun deleteCaja(
-        @Query("almacen") almacen: String,
+        @Query("almacen") almacen: Int,
         @Query("palet") palet: Int,
         @Query("caja") caja: Int
     ): Call<ResponseBody>
 
     @DELETE("/gestock/palets/delete")
     fun deletePalet(
-        @Query("almacen") almacen: String,
+        @Query("almacen") almacen: Int,
         @Query("palet") palet: Int
     ): Call<ResponseBody>
 
@@ -74,14 +75,14 @@ interface Endpoints {
 
     @GET("/gestock/cajas/{almacen}/{palet}/{caja}")
     fun existCaja(
-        @Path("almacen") almacen: String,
+        @Path("almacen") almacen: Int,
         @Path("palet") palet: Int,
         @Path("caja") caja: Int
     ): Call<CajaExiste>
 
     @GET("/gestock/filtered-search")
     fun filteredSearch(
-        @Query("almacen") almacen: String,
+        @Query("almacen") almacen: Int,
         @Query("ean") ean: String? = null,
         @Query("talla") talla: String? = null,
         @Query("nombre") nombre: String? = null,
@@ -95,25 +96,25 @@ interface Endpoints {
 
     @GET("/gestock/cajas")
     fun getCajas(
-        @Query("almacen") almacen: String,
+        @Query("almacen") almacen: Int,
         @Query("palet") palet: Int
     ): Call<CajasResponse>
 
     @GET("/gestock/cajas/get-desc-temp")
     fun getDescTempCaja(
-        @Query("almacen") almacen: String,
+        @Query("almacen") almacen: Int,
         @Query("palet") palet: Int,
         @Query("caja") caja: Int
     ): Call<DescTempCajaResponse>
 
     @GET("/gestock/familias")
     fun getFamilias(
-        @Query("almacen") almacen: String
+        @Query("almacen") almacen: Int
     ): Call<List<Familia>>
 
     @GET("/gestock/palets")
     fun getPalets(
-        @Query("almacen") almacen: String
+        @Query("almacen") almacen: Int
     ): Call<PaletsResponse>
 
     @GET("/gestock/products/values")
@@ -124,14 +125,19 @@ interface Endpoints {
 
     @GET("/gestock/stock")
     fun getStockCaja(
-        @Query("almacen") almacen: String,
+        @Query("almacen") almacen: Int,
         @Query("palet") palet: Int,
         @Query("caja") caja: Int
     ): Call<StockCajaResponse>
 
     @GET("/gestock/login")
     fun loginAlmacen(
-        @Query("code") code: String
+        @Query("code") code: Int
+    ): Call<ResponseBody>
+
+    @GET("/gestock/user")
+    fun validarUser(
+        @Query("key") key: String
     ): Call<ResponseBody>
 
     @POST("/gestock/stock/move")
@@ -141,7 +147,7 @@ interface Endpoints {
 
     @GET("/gestock/stock-export")
     fun stockExport(
-        @Query("almacen") almacen: String
+        @Query("almacen") almacen: Int
     ): Call<List<FilteredSearch>>
 
     @Multipart
@@ -153,14 +159,14 @@ interface Endpoints {
 
     @POST("/gestock/cajas/update-cantidad")
     fun updateCantidadCaja(
-        @Query("almacen") almacen: String,
+        @Query("almacen") almacen: Int,
         @Query("palet") palet: Int,
         @Query("caja") caja: Int
     ): Call<ResponseBody>
 
     @POST("/gestock/cajas/update-desc-temp")
     fun updateDescTempCaja(
-        @Query("almacen") almacen: String,
+        @Query("almacen") almacen: Int,
         @Query("palet") palet: Int,
         @Query("caja") caja: Int,
         @Query("descripcion") descripcion: String = "SIN DESCRIPCIÓN",

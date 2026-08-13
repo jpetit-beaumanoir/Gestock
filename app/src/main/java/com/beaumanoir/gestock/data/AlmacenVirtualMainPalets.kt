@@ -134,7 +134,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
                     val almacen = eanEntrat.subSequence(0..3).toString().toInt()
                     val palet = eanEntrat.subSequence(4..7).toString().toInt()
                     val caja = eanEntrat.subSequence(8..11).toString().toInt()
-                    RetrofitClient.getApiService(this@AlmacenVirtualMainPalets)
+                    RetrofitClient.getApiService()
                         .existCaja(almacen, palet, caja)
                         .enqueue(object : Callback<CajaExiste> {
                             override fun onResponse(call: Call<CajaExiste>, response: Response<CajaExiste>) {
@@ -254,7 +254,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
     }
 
     private fun deletePaletAPI(almacen: Int, palet: Int, callback: APIResponseCallback) {
-        RetrofitClient.getApiService(this).deletePalet(almacen, palet)
+        RetrofitClient.getApiService().deletePalet(almacen, palet)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     if (response.isSuccessful) {
@@ -277,7 +277,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
     }
 
     private fun getPaletsAPI() {
-        RetrofitClient.getApiService(this).getPalets(codigoAlmacen)
+        RetrofitClient.getApiService().getPalets(codigoAlmacen)
             .enqueue(object : Callback<PaletsResponse> {
                 override fun onResponse(call: Call<PaletsResponse>, response: Response<PaletsResponse>) {
                     if (response.isSuccessful) {
@@ -309,7 +309,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
     }
 
     private fun createPaletAPI(almacen: Int, callback: APIResponseCallback) {
-        RetrofitClient.getApiService(this).createPalet(almacen)
+        RetrofitClient.getApiService().createPalet(almacen)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     if (response.isSuccessful) {
@@ -409,7 +409,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
             file.asRequestBody("text/csv".toMediaTypeOrNull())
         )
         val brandBody = brandName.toRequestBody("text/plain".toMediaTypeOrNull())
-        RetrofitClient.getApiService(this).subirCatalogo(csvPart, brandBody)
+        RetrofitClient.getApiService().subirCatalogo(csvPart, brandBody)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     textViewImportando.visibility = View.GONE

@@ -124,7 +124,7 @@ class StockSearch : AppCompatActivity() {
     }
 
     private fun getFamiliasAPI() {
-        RetrofitClient.getApiService(this).getFamilias(codigoAlmacen)
+        RetrofitClient.getApiService().getFamilias(codigoAlmacen)
             .enqueue(object : Callback<List<Familia>> {
                 override fun onResponse(call: Call<List<Familia>>, response: Response<List<Familia>>) {
                     if (response.isSuccessful) {
@@ -158,7 +158,7 @@ class StockSearch : AppCompatActivity() {
         familia: String, color: String, temporada: String,
         callback: APIResponseCallback<FilteredSearch>
     ) {
-        RetrofitClient.getApiService(this)
+        RetrofitClient.getApiService()
             .filteredSearch(almacen, ean, talla, nombre, familia, color, temporada)
             .enqueue(object : Callback<List<FilteredSearch>> {
                 override fun onResponse(call: Call<List<FilteredSearch>>, response: Response<List<FilteredSearch>>) {

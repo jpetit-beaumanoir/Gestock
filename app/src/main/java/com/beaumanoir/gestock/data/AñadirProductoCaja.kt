@@ -167,7 +167,7 @@ class AñadirProductoCaja : AppCompatActivity(), ProductoAdapter.OnItemClickList
     }
 
     private fun getValuesfromProductoAPI(ean: String, callback: APIResponseCallback) {
-        RetrofitClient.getApiService(this).getProductValues(ean, codigoAlmacen)
+        RetrofitClient.getApiService().getProductValues(ean, codigoAlmacen)
             .enqueue(object : Callback<ProductValues> {
                 override fun onResponse(call: Call<ProductValues>, response: Response<ProductValues>) {
                     if (response.isSuccessful) {
@@ -195,7 +195,7 @@ class AñadirProductoCaja : AppCompatActivity(), ProductoAdapter.OnItemClickList
     }
 
     private fun addStockAPI(eans: List<String>) {
-        RetrofitClient.getApiService(this)
+        RetrofitClient.getApiService()
             .addStock(AddStockRequest(codigoAlmacen, idPalet, idCaja, eans))
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -228,7 +228,7 @@ class AñadirProductoCaja : AppCompatActivity(), ProductoAdapter.OnItemClickList
     }
 
     private fun updateCantidadCajaAPI() {
-        RetrofitClient.getApiService(this)
+        RetrofitClient.getApiService()
             .updateCantidadCaja(codigoAlmacen, idPalet, idCaja)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {

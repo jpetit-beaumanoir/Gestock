@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 data class Almacenes(
-    val codigo: String,
+    val codigo: Int,
     val nombre: String,
     val palets: Int,
     val cajas: Int,
@@ -50,7 +50,7 @@ data class ResultadoProductos(
     val ean: String,
     val palet: Int,
     val caja: Int,
-    val almacen: String,
+    val almacen: Int,
     val talla: String,
     val nombre: String,
     val familia: String,
@@ -68,7 +68,7 @@ data class ExportarStock(
     val caja: Int,
     val descCaja: String,
     val tempCaja: String,
-    val almacen: String,
+    val almacen: Int,
     val talla: String,
     val nombre: String,
     val familia: String,
@@ -88,12 +88,12 @@ data class Almacen(
 )
 
 data class AlmacenResponse(
-    val almacenes: Map<String, Almacen>
+    val almacenes: Map<Int, Almacen>
 )
 
 data class AlmacenCreateRequest(
     val name: String,
-    val code: String
+    val code: Int
 )
 
 data class Palet(
@@ -164,7 +164,7 @@ data class FilteredSearch(
     val caja: Int,
     @SerializedName("desc_caja") val descCaja: String?,
     @SerializedName("temp_caja") val tempCaja: String?,
-    val almacen: String,
+    val almacen: Int,
     val talla: String?,
     val nombre: String?,
     val familia: String?,
@@ -177,21 +177,21 @@ data class FilteredSearch(
 )
 
 data class AddStockRequest(
-    val almacen: String,
+    val almacen: Int,
     val palet: Int,
     val caja: Int,
     val eans: List<String>
 )
 
 data class DeleteStockRequest(
-    val almacen: String,
+    val almacen: Int,
     val palet: Int,
     val caja: Int,
     val ids: List<Int>
 )
 
 data class MoveStockRequest(
-    val almacen: String,
+    val almacen: Int,
     val palet: Int,
     val caja: Int,
     val ids: List<Int>
