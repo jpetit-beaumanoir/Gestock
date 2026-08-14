@@ -94,6 +94,8 @@
         android:layout_width="wrap_content"
         android:layout_height="50dp"
 
+        android:focusable="false"
+
         android:text="Mover caja entera"
         android:textSize="20sp"
         android:textStyle="bold"

@@ -91,18 +91,18 @@ class MoverProductosCaja : AppCompatActivity(), ProductoAdapter.OnItemClickListe
             }
         }
 
-        val editText = findViewById<EditText>(R.id.ean_producto_mover)
-        editText.requestFocus()
-        editText.setOnEditorActionListener { _, actionId, _ ->
+        val editTextEAN = findViewById<EditText>(R.id.ean_producto_mover)
+        editTextEAN.requestFocus()
+        editTextEAN.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == 0 || actionId == 4 || actionId == 6) {
-                editText.text.clear()
-                editText.requestFocus()
+                editTextEAN.text.clear()
+                editTextEAN.requestFocus()
                 true
             } else {
                 false
             }
         }
-        editText.addTextChangedListener(object : TextWatcher {
+        editTextEAN.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -132,8 +132,8 @@ class MoverProductosCaja : AppCompatActivity(), ProductoAdapter.OnItemClickListe
                 } else {
                     Toast.makeText(applicationContext, "No mas productos $ean en la caja", Toast.LENGTH_SHORT).show()
                 }
-                editText.text.clear()
-                editText.requestFocus()
+                editTextEAN.text.clear()
+                editTextEAN.requestFocus()
                 textView.text = "TOTAL: ${scannedProductIds.size}"
             }
         })

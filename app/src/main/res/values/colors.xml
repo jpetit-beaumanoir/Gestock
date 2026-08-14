@@ -5,7 +5,9 @@
     <color name="white">#ffffffff</color>
     <color name="blau_adapter">#c1ebe6</color>
     <color name="gris_6">#4aaeadad</color>
+    <color name="gris_7">#B2AEADAD</color>
     <color name="verd_background">#D7EAE2</color>
+    <color name="verd_background_80">#CCD7EAE2</color>
     <color name="ic_launcher_background">#ffffff</color>
 
     <!-- Colores del tema (Theme.Gestock) -->

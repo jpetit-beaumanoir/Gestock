@@ -12,6 +12,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -41,6 +42,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     private lateinit var botonOpcionesAlmacenes: AppCompatButton
     private lateinit var nombreAlmacen: String
     private var codigoAlmacen: Int = 0
+    private lateinit var linearLayoutRecycler: LinearLayout
     private lateinit var collectionAlmacen: List<Almacenes>
     private lateinit var almacenAdapter: AlmacenAdapter
     private val almacenList: MutableList<Almacenes> = ArrayList()
@@ -51,7 +53,9 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     private lateinit var btnEliminarAlmacen: AppCompatButton
     private lateinit var editTextKey: EditText
     private lateinit var usuariTextView: TextView
+    private lateinit var textViewValdiarUsuario: TextView
     private var apiKeyGuardada: Boolean = false
+    private lateinit var usuarioLogeado: String
 
     interface APIResponseCallback {
         fun onError(errorMessage: String)
@@ -63,13 +67,14 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
         fun onUserSuccess(user: String)
     }
 
-    ARREGLAR LA RESPOSTA DEL SERVIDOR PER RETORNAR FORBIDEN EN COMTPES DE NO S'HAN TROBAT MAGATZEMS
+    // ARREGLAR LA RESPOSTA DEL SERVIDOR PER RETORNAR FORBIDEN EN COMTPES DE NO S'HAN TROBAT MAGATZEMS
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
         apiKeyGuardada = prefs.getString("api_key_gestock", null)?.isNotEmpty() ?: false
+        usuarioLogeado = prefs.getString("user", "").toString()
 
         permissionLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
@@ -95,6 +100,9 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
             onResume()
         }
 
+        textViewValdiarUsuario = findViewById(R.id.textview_validar_usuario)
+        linearLayoutRecycler = findViewById(R.id.linearLayout)
+
         botonOpcionesAlmacenes = findViewById(R.id.boton_opciones_login)
 
         botonOpcionesAlmacenes.setOnClickListener {
@@ -110,7 +118,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
 
             editTextKey = view.findViewById(R.id.key_usuari)
             usuariTextView = view.findViewById(R.id.usuari_registrat)
-            usuariTextView.text = prefs.getString("user", "")
+            usuariTextView.text = usuarioLogeado
 
             btnCrearAlmacen = view.findViewById(R.id.boton_crear_almacen)
             btnEliminarAlmacen = view.findViewById(R.id.boton_eliminar_almacen)
@@ -139,6 +147,8 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
                         dialog.dismiss()
 
                         apiKeyGuardada = true
+                        usuarioLogeado = user
+
                         onResume()
                     }
 
@@ -225,10 +235,14 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     override fun onResume() {
 
         if (RetrofitClient.isConnectedToInternet(this)) {
-            if (!apiKeyGuardada) {
+            if (!apiKeyGuardada || usuarioLogeado == "anonim") {
+                textViewValdiarUsuario.visibility = View.VISIBLE
+                linearLayoutRecycler.visibility = View.GONE
+
                 botonOpcionesAlmacenes.callOnClick()
-                Toast.makeText(this, "INTRODUCE UNA APIKEY", Toast.LENGTH_LONG).show()
             } else {
+                textViewValdiarUsuario.visibility = View.GONE
+                linearLayoutRecycler.visibility = View.VISIBLE
                 getAlmacenesAPI()
             }
 
