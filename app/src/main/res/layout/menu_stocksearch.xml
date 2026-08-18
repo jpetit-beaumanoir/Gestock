@@ -39,19 +39,4 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textview_importando"/>
-    <androidx.appcompat.widget.AppCompatButton
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:id="@+id/boton_almacen_virtual"
-        android:background="@drawable/border_line"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:layout_margin="15dp"
-        android:text="ALMACÉN VIRTUAL"
-        android:fontFamily="@font/abhaya_libre"
-        android:letterSpacing="0.07"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
