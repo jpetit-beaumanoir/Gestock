@@ -4,7 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.widget.ProgressBar
 import android.widget.Toast
-import com.beaumanoir.gestock.data.API.RetrofitClient
+import com.beaumanoir.gestock.GestockApiFactory
 import okhttp3.ResponseBody
 import org.json.JSONObject
 import retrofit2.Call
@@ -16,7 +16,7 @@ import java.util.Locale
 object Menu {
 
     fun checkCajaExists(context: Context, almacen: Int, palet: Int, caja: Int, eans: List<String>, file: File) {
-        RetrofitClient.getApiService().existCaja(almacen, palet, caja)
+        GestockApiFactory.getApi(context).existCaja(almacen, palet, caja)
             .enqueue(object : Callback<CajaExiste> {
                 override fun onResponse(call: Call<CajaExiste>, response: Response<CajaExiste>) {
                     if (response.isSuccessful) {
@@ -100,7 +100,7 @@ object Menu {
     }
 
     private fun getValuesfromProductoAPI(ean: String, codigoAlmacen: Int, context: Context, callback: AñadirProductoCaja.APIResponseCallback) {
-        RetrofitClient.getApiService().getProductValues(ean, codigoAlmacen)
+        GestockApiFactory.getApi(context).getProductValues(ean, codigoAlmacen)
             .enqueue(object : Callback<ProductValues> {
                 override fun onResponse(call: Call<ProductValues>, response: Response<ProductValues>) {
                     if (response.isSuccessful) {
@@ -134,7 +134,7 @@ object Menu {
     }
 
     private fun getStockCajaFromAPI(almacen: Int, palet: Int, caja: Int, eans: List<String>, context: Context, file: File) {
-        RetrofitClient.getApiService().getStockCaja(almacen, palet, caja)
+        GestockApiFactory.getApi(context).getStockCaja(almacen, palet, caja)
             .enqueue(object : Callback<StockCajaResponse> {
                 override fun onResponse(call: Call<StockCajaResponse>, response: Response<StockCajaResponse>) {
                     if (response.isSuccessful) {
@@ -174,7 +174,7 @@ object Menu {
     }
 
     private fun addStockAPI(context: Context, eans: List<String>, almacen:Int, palet: Int, caja: Int) {
-        RetrofitClient.getApiService()
+        GestockApiFactory.getApi(context)
             .addStock(AddStockRequest(almacen, palet, caja, eans))
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -199,7 +199,7 @@ object Menu {
     }
 
     private fun deleteStockAPI(context: Context, deleteIds: List<Int>, almacen:Int,  palet: Int, caja: Int) {
-        RetrofitClient.getApiService()
+        GestockApiFactory.getApi(context)
             .deleteStock(DeleteStockRequest(almacen, palet, caja, deleteIds))
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -223,7 +223,7 @@ object Menu {
     }
 
     private fun updateCantidadCajaAPI(context: Context, almacen:Int, palet: Int, caja: Int) {
-        RetrofitClient.getApiService()
+        GestockApiFactory.getApi(context)
             .updateCantidadCaja(almacen, palet, caja)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {

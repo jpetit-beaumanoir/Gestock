@@ -12,8 +12,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.beaumanoir.gestock.GestockApiFactory
 import com.beaumanoir.gestock.R
-import com.beaumanoir.gestock.data.API.RetrofitClient
 import com.beaumanoir.gestock.data.sqlite.ProductoAdapter
 import okhttp3.ResponseBody
 import org.json.JSONObject
@@ -163,7 +163,7 @@ class MoverProductosCaja : AppCompatActivity(), ProductoAdapter.OnItemClickListe
     }
 
     private fun moveStockAPI(callback: APIResponseCallback) {
-        RetrofitClient.getApiService()
+        GestockApiFactory.getApi(this)
             .moveStock(MoveStockRequest(codigoAlmacen, paletDestino, cajaDestino, scannedProductIds.toList()))
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -191,7 +191,7 @@ class MoverProductosCaja : AppCompatActivity(), ProductoAdapter.OnItemClickListe
     }
 
     private fun updateCantidadCajaAPI(palet: Int, caja: Int) {
-        RetrofitClient.getApiService()
+        GestockApiFactory.getApi(this)
             .updateCantidadCaja(codigoAlmacen, palet, caja)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {

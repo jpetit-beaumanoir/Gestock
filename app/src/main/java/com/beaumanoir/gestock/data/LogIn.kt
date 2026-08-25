@@ -9,9 +9,7 @@ import android.os.Environment
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -22,8 +20,8 @@ import androidx.appcompat.widget.AppCompatButton
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.beaumanoir.gestock.GestockApiFactory
 import com.beaumanoir.gestock.R
-import com.beaumanoir.gestock.data.API.RetrofitClient
 import com.beaumanoir.gestock.data.sqlite.AlmacenAdapter
 import okhttp3.ResponseBody
 import org.json.JSONObject
@@ -170,7 +168,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
                     return@setOnClickListener
                 }
 
-                if (!RetrofitClient.isConnectedToInternet(this)) {
+                if (!GestockApiFactory.isConnectedToInternet(this)) {
                     Toast.makeText(this, "NO TIENES CONEXIÓN A INTERNET", Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
@@ -198,7 +196,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
                     return@setOnClickListener
                 }
 
-                if (!RetrofitClient.isConnectedToInternet(this)) {
+                if (!GestockApiFactory.isConnectedToInternet(this)) {
                     Toast.makeText(this, "NO TIENES CONEXIÓN A INTERNET", Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
@@ -234,7 +232,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
 
     override fun onResume() {
 
-        if (RetrofitClient.isConnectedToInternet(this)) {
+        if (GestockApiFactory.isConnectedToInternet(this)) {
             if (!apiKeyGuardada || usuarioLogeado == "anonim") {
                 textViewValdiarUsuario.visibility = View.VISIBLE
                 linearLayoutRecycler.visibility = View.GONE
@@ -289,7 +287,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
 
     }
     private fun getAlmacenesAPI() {
-        RetrofitClient.getApiService().getAlmacenes().enqueue(object : Callback<AlmacenResponse> {
+        GestockApiFactory.getApi(this).getAlmacenes().enqueue(object : Callback<AlmacenResponse> {
             override fun onResponse(call: Call<AlmacenResponse>, response: Response<AlmacenResponse>) {
                 if (response.isSuccessful) {
                     val body = response.body()
@@ -314,7 +312,8 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
 
             override fun onFailure(call: Call<AlmacenResponse>, t: Throwable) {
                 val message = t.message?.lowercase(Locale.ROOT)
-                Log.d("ERROR CONEXION SERVIDOR", message.toString())
+                Log.e("GESTOCK_ERROR","Error de connexion", t)
+                t.printStackTrace()
 
                 if (message != null && message.contains("unable to resolve host")) {
                     Toast.makeText(this@LogIn, "No tienes conexión a internet", Toast.LENGTH_LONG).show()
@@ -328,7 +327,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     override fun onItemClick(almacenVirtual: Almacenes) {
         nombreAlmacen = almacenVirtual.nombre
         codigoAlmacen = almacenVirtual.codigo
-        if (RetrofitClient.isConnectedToInternet(this)) {
+        if (GestockApiFactory.isConnectedToInternet(this)) {
             login(object : APIResponseCallback {
                 override fun onSuccess(nombre: String) {
                     val intent = Intent(this@LogIn, AlmacenVirtualMainPalets::class.java)
@@ -347,7 +346,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     }
 
     private fun login(callback: APIResponseCallback) {
-        RetrofitClient.getApiService().loginAlmacen(codigoAlmacen).enqueue(object : Callback<ResponseBody> {
+        GestockApiFactory.getApi(this).loginAlmacen(codigoAlmacen).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (response.isSuccessful) {
                     callback.onSuccess(nombreAlmacen)
@@ -373,7 +372,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     }
 
     private fun validarUsuari(key: String, callback: UserValidCallback) {
-        RetrofitClient.getApiService().validarUser(key).enqueue(object : Callback<ResponseBody> {
+        GestockApiFactory.getApi(this).validarUser(key).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(
                 call: Call<ResponseBody>,
                 response: Response<ResponseBody>
@@ -409,7 +408,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     }
 
     private fun createAlmacenesAPI(nombre: String, codigo: Int, callback: APIResponseCallback) {
-        RetrofitClient.getApiService().createAlmacen(AlmacenCreateRequest(nombre, codigo))
+        GestockApiFactory.getApi(this).createAlmacen(AlmacenCreateRequest(nombre, codigo))
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     if (response.isSuccessful) {
@@ -441,7 +440,7 @@ class LogIn : AppCompatActivity(), AlmacenAdapter.OnItemClickListener {
     }
 
     private fun deleteAlmacenesAPI(codigo: Int, callback: APIResponseCallback) {
-        RetrofitClient.getApiService().deleteAlmacen(codigo).enqueue(object : Callback<ResponseBody> {
+        GestockApiFactory.getApi(this).deleteAlmacen(codigo).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (response.isSuccessful) {
                     Log.d("Response API", response.toString())

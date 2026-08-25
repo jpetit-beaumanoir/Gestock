@@ -1,43 +1,33 @@
 package com.beaumanoir.gestock.data
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
-import android.inputmethodservice.InputMethodService
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
-import androidx.core.content.getSystemService
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.beaumanoir.gestock.GestockApiFactory
 import com.beaumanoir.gestock.R
-import com.beaumanoir.gestock.data.API.RetrofitClient
 import com.beaumanoir.gestock.data.sqlite.DatabaseHelper
 import com.beaumanoir.gestock.data.sqlite.ProductoAdapter
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
-import org.w3c.dom.Text
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -126,14 +116,7 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
                 return@setOnEditorActionListener false
             }
 
-            if (editTextDescripcion.text.toString().equals(descripcionActual, ignoreCase = true)) {
-                return@setOnEditorActionListener false
-            }
-
-            botonGuardarDescTemp.isEnabled = true
-            botonGuardarDescTemp.isClickable = true
-            botonGuardarDescTemp.alpha = 1f
-            botonGuardarDescTemp.setBackgroundResource(R.drawable.border_line)
+            checkNewDescTemp()
 
             editTextTemporada.requestFocus()
 
@@ -146,14 +129,7 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
                 return@setOnEditorActionListener false
             }
 
-            if (editTextTemporada.text.toString().equals(temporadaActual, ignoreCase = true)) {
-                return@setOnEditorActionListener false
-            }
-
-            botonGuardarDescTemp.isEnabled = true
-            botonGuardarDescTemp.isClickable = true
-            botonGuardarDescTemp.alpha = 1f
-            botonGuardarDescTemp.setBackgroundResource(R.drawable.border_line)
+            checkNewDescTemp()
 
             val imm = getSystemService(INPUT_METHOD_SERVICE)
                     as InputMethodManager
@@ -168,17 +144,27 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
 
         botonGuardarDescTemp.setOnClickListener {
 
+            val temporada = editTextTemporada.text.toString()
+                .takeIf { it.isNotBlank() }
+                ?.uppercase(Locale.ROOT)
+                ?: editTextTemporada.hint.toString().uppercase(Locale.ROOT)
+
+            val descripcion = editTextDescripcion.text.toString()
+                .takeIf { it.isNotBlank() }
+                ?.uppercase(Locale.ROOT)
+                ?: editTextDescripcion.hint.toString().uppercase(Locale.ROOT)
+
             updateCajaDescTempAPI(
 
-                editTextDescripcion.text.toString().uppercase(Locale.ROOT),
-                editTextTemporada.text.toString().uppercase(Locale.ROOT),
+                descripcion,
+                temporada,
                 object : APIResponseCallback {
 
                     override fun onSuccess(response: String) {
                         Toast.makeText(this@GestionCajasAlmacen,"DESCRIPCION Y TEMPORADA ACTUALIZADAS", Toast.LENGTH_SHORT).show()
 
-                        editTextDescripcion.hint = editTextDescripcion.text.toString().uppercase()
-                        editTextTemporada.hint = editTextTemporada.text.toString().uppercase()
+                        editTextDescripcion.hint = descripcion
+                        editTextTemporada.hint = temporada
 
                         editTextDescripcion.setText("")
                         editTextTemporada.setText("")
@@ -315,6 +301,35 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
         recyclerView.layoutManager = LinearLayoutManager(this)
         totalProductosCaja = findViewById(R.id.total_productos_caja)
 
+    }
+
+    private fun activarDesactivarBotoGuardar(activar: Boolean) {
+        if (activar) {
+            botonGuardarDescTemp.isEnabled = true
+            botonGuardarDescTemp.isClickable = true
+            botonGuardarDescTemp.alpha = 1f
+        } else {
+            botonGuardarDescTemp.isEnabled = false
+            botonGuardarDescTemp.isClickable = false
+            botonGuardarDescTemp.alpha = 0.3f
+        }
+    }
+
+    private fun checkNewDescTemp() {
+
+        val temporada = editTextTemporada.text.toString()
+            .takeIf { it.isNotBlank() }
+            ?: editTextTemporada.hint.toString()
+
+        val descripcion = editTextDescripcion.text.toString()
+            .takeIf { it.isNotBlank() }
+            ?: editTextDescripcion.hint.toString()
+
+        val hayCambios =
+            !temporada.equals(temporadaActual, true) ||
+                    !descripcion.equals(descripcionActual, true)
+
+        activarDesactivarBotoGuardar(hayCambios)
     }
 
     // FUNCIO CONVERTIR dp A PIXELS
@@ -507,7 +522,7 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
     private fun getDescTempAPI(
         onResult: (String, String) -> Unit
     ) {
-        RetrofitClient.getApiService()
+        GestockApiFactory.getApi(this)
             .getDescTempCaja(codigoAlmacen, idPalet, idCaja)
             .enqueue(object : Callback<DescTempCajaResponse> {
 
@@ -534,7 +549,7 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
     }
 
     private fun updateCajaDescTempAPI(descripcion: String, temporada: String = "SIN TEMPORADA", callback: APIResponseCallback) {
-        RetrofitClient.getApiService()
+        GestockApiFactory.getApi(this)
             .updateDescTempCaja(codigoAlmacen, idPalet, idCaja, descripcion, temporada)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -558,7 +573,7 @@ class GestionCajasAlmacen : AppCompatActivity(), ProductoAdapter.OnItemClickList
     }
 
     private fun getStockCajaAPI() {
-        RetrofitClient.getApiService()
+        GestockApiFactory.getApi(this)
             .getStockCaja(codigoAlmacen, idPalet, idCaja)
             .enqueue(object : Callback<StockCajaResponse> {
 

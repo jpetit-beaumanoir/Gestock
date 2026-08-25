@@ -3,6 +3,8 @@ package com.beaumanoir.gestock.data
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
+
+SEGUIR CREANT LES CARPETAS SCHEMA PER CADA ELEMENT
 data class Almacenes(
     val codigo: Int,
     val nombre: String,

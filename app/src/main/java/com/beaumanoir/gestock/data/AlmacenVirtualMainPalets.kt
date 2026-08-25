@@ -1,8 +1,6 @@
 package com.beaumanoir.gestock.data
 
 import android.animation.ObjectAnimator
-import android.app.AlertDialog
-import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
@@ -23,13 +21,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
-import androidx.core.view.setPadding
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.beaumanoir.gestock.GestockApiFactory
 import com.beaumanoir.gestock.R
-import com.beaumanoir.gestock.data.API.RetrofitClient
 import com.beaumanoir.gestock.data.sqlite.PaletAdapter
 import com.google.android.material.navigation.NavigationView
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -134,7 +131,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
                     val almacen = eanEntrat.subSequence(0..3).toString().toInt()
                     val palet = eanEntrat.subSequence(4..7).toString().toInt()
                     val caja = eanEntrat.subSequence(8..11).toString().toInt()
-                    RetrofitClient.getApiService()
+                    GestockApiFactory.getApi(this@AlmacenVirtualMainPalets)
                         .existCaja(almacen, palet, caja)
                         .enqueue(object : Callback<CajaExiste> {
                             override fun onResponse(call: Call<CajaExiste>, response: Response<CajaExiste>) {
@@ -189,7 +186,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
                 val palet = paletList[position]
-                if (RetrofitClient.isConnectedToInternet(this@AlmacenVirtualMainPalets)) {
+                if (GestockApiFactory.isConnectedToInternet(this@AlmacenVirtualMainPalets)) {
                     deletePaletAPI(codigoAlmacen, palet.palet, object : APIResponseCallback {
                         override fun onSuccess(response: String) {
                             paletList.removeAt(position)
@@ -209,7 +206,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
         ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView)
 
         findViewById<AppCompatButton>(R.id.anadir_palet).setOnClickListener {
-            if (RetrofitClient.isConnectedToInternet(this)) {
+            if (GestockApiFactory.isConnectedToInternet(this)) {
                 createPaletAPI(codigoAlmacen, object : APIResponseCallback {
                     override fun onSuccess(response: String) {
                         getPaletsAPI()
@@ -239,7 +236,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
 
     override fun onResume() {
         super.onResume()
-        if (RetrofitClient.isConnectedToInternet(this)) {
+        if (GestockApiFactory.isConnectedToInternet(this)) {
             getPaletsAPI()
             recyclerView.scrollToPosition(recyclerPosition)
         } else {
@@ -254,7 +251,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
     }
 
     private fun deletePaletAPI(almacen: Int, palet: Int, callback: APIResponseCallback) {
-        RetrofitClient.getApiService().deletePalet(almacen, palet)
+        GestockApiFactory.getApi(this).deletePalet(almacen, palet)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     if (response.isSuccessful) {
@@ -277,7 +274,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
     }
 
     private fun getPaletsAPI() {
-        RetrofitClient.getApiService().getPalets(codigoAlmacen)
+        GestockApiFactory.getApi(this).getPalets(codigoAlmacen)
             .enqueue(object : Callback<PaletsResponse> {
                 override fun onResponse(call: Call<PaletsResponse>, response: Response<PaletsResponse>) {
                     if (response.isSuccessful) {
@@ -309,7 +306,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
     }
 
     private fun createPaletAPI(almacen: Int, callback: APIResponseCallback) {
-        RetrofitClient.getApiService().createPalet(almacen)
+        GestockApiFactory.getApi(this).createPalet(almacen)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     if (response.isSuccessful) {
@@ -409,7 +406,7 @@ class AlmacenVirtualMainPalets : AppCompatActivity(), PaletAdapter.OnItemClickLi
             file.asRequestBody("text/csv".toMediaTypeOrNull())
         )
         val brandBody = brandName.toRequestBody("text/plain".toMediaTypeOrNull())
-        RetrofitClient.getApiService().subirCatalogo(csvPart, brandBody)
+        GestockApiFactory.getApi(this).subirCatalogo(csvPart, brandBody)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     textViewImportando.visibility = View.GONE

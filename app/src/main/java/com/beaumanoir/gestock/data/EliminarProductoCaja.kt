@@ -4,7 +4,6 @@ import android.media.MediaPlayer
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
@@ -12,8 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.beaumanoir.gestock.GestockApiFactory
 import com.beaumanoir.gestock.R
-import com.beaumanoir.gestock.data.API.RetrofitClient
 import com.beaumanoir.gestock.data.sqlite.EliminarProductoAdapter
 import okhttp3.ResponseBody
 import org.json.JSONObject
@@ -117,7 +116,7 @@ class EliminarProductoCaja : AppCompatActivity(), EliminarProductoAdapter.OnItem
     }
 
     private fun deleteStockAPI() {
-        RetrofitClient.getApiService()
+        GestockApiFactory.getApi(this)
             .deleteStock(DeleteStockRequest(codigoAlmacen, idPalet, idCaja, scannedProductIds))
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -143,7 +142,7 @@ class EliminarProductoCaja : AppCompatActivity(), EliminarProductoAdapter.OnItem
     }
 
     private fun updateCantidadCajaAPI() {
-        RetrofitClient.getApiService()
+        GestockApiFactory.getApi(this)
             .updateCantidadCaja(codigoAlmacen, idPalet, idCaja)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {

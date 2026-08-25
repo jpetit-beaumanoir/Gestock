@@ -27,8 +27,8 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.beaumanoir.gestock.GestockApiFactory
 import com.beaumanoir.gestock.R
-import com.beaumanoir.gestock.data.API.RetrofitClient
 import com.beaumanoir.gestock.data.sqlite.CajaAdapter
 import com.google.android.material.navigation.NavigationView
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -136,7 +136,7 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
                 val caja = cajasList[position]
-                if (RetrofitClient.isConnectedToInternet(this@AlmacenVirtualMainCajas)) {
+                if (GestockApiFactory.isConnectedToInternet(this@AlmacenVirtualMainCajas)) {
                     deleteCajaAPI(caja.caja, object : APIResponseCallback {
                         override fun onSuccess(response: String) {
                             getCajasAPI()
@@ -155,7 +155,7 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
         ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView)
 
         findViewById<AppCompatButton>(R.id.anadir_caja).setOnClickListener {
-            if (RetrofitClient.isConnectedToInternet(this)) {
+            if (GestockApiFactory.isConnectedToInternet(this)) {
                 createCajaAPI(object : APIResponseCallback {
                     override fun onSuccess(response: String) {
                         dialegImprimirEtiqueta(response.split(" ")[1].toInt())
@@ -184,7 +184,7 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
 
     override fun onResume() {
         super.onResume()
-        if (RetrofitClient.isConnectedToInternet(this)) {
+        if (GestockApiFactory.isConnectedToInternet(this)) {
             getCajasAPI()
         } else {
             Toast.makeText(this, "NO TIENES CONEXIÓN A INTERNET", Toast.LENGTH_LONG).show()
@@ -301,7 +301,7 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
     }
 
     private fun getCajasAPI() {
-        RetrofitClient.getApiService().getCajas(codigoAlmacen, idPalet)
+        GestockApiFactory.getApi(this).getCajas(codigoAlmacen, idPalet)
             .enqueue(object : Callback<CajasResponse> {
                 override fun onResponse(call: Call<CajasResponse>, response: Response<CajasResponse>) {
                     if (response.isSuccessful) {
@@ -335,7 +335,7 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
     }
 
     private fun createCajaAPI(callback: APIResponseCallback) {
-        RetrofitClient.getApiService().createCaja(codigoAlmacen, idPalet)
+        GestockApiFactory.getApi(this).createCaja(codigoAlmacen, idPalet)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     if (response.isSuccessful) {
@@ -358,7 +358,7 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
     }
 
     private fun deleteCajaAPI(caja: Int, callback: APIResponseCallback) {
-        RetrofitClient.getApiService().deleteCaja(codigoAlmacen, idPalet, caja)
+        GestockApiFactory.getApi(this).deleteCaja(codigoAlmacen, idPalet, caja)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     if (response.isSuccessful) {
@@ -458,7 +458,7 @@ class AlmacenVirtualMainCajas : AppCompatActivity(), CajaAdapter.OnItemClickList
             file.asRequestBody("text/csv".toMediaTypeOrNull())
         )
         val brandBody = brandName.toRequestBody("text/plain".toMediaTypeOrNull())
-        RetrofitClient.getApiService().subirCatalogo(csvPart, brandBody)
+        GestockApiFactory.getApi(this).subirCatalogo(csvPart, brandBody)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     textViewImportando.visibility = View.GONE

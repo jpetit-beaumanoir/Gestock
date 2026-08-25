@@ -1,1 +1,5 @@
 /build
+*.p12
+*.pem
+*.key
+*.crt

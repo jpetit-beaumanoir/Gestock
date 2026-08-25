@@ -13,8 +13,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.lifecycle.lifecycleScope
+import com.beaumanoir.gestock.GestockApiFactory
 import com.beaumanoir.gestock.R
-import com.beaumanoir.gestock.data.API.RetrofitClient
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.Dispatchers
@@ -60,7 +60,7 @@ class StockSearch : AppCompatActivity() {
         autoCompleteFamilia = findViewById(R.id.auto_complete_familia)
         val chipGroup = findViewById<ChipGroup>(R.id.chip_group_familia)
 
-        if (RetrofitClient.isConnectedToInternet(this)) {
+        if (GestockApiFactory.isConnectedToInternet(this)) {
             getFamiliasAPI()
         } else {
             Toast.makeText(this, "NO TIENES CONEXIÓN A INTERNET", Toast.LENGTH_LONG).show()
@@ -83,7 +83,7 @@ class StockSearch : AppCompatActivity() {
             val temporada = temporadaEntrada.text.toString()
             val nombre = nombreEntrado.text.toString()
             val familias = selectedFamilias.joinToString(",")
-            if (RetrofitClient.isConnectedToInternet(this)) {
+            if (GestockApiFactory.isConnectedToInternet(this)) {
                 buscarProductesFiltratsAPI(
                     codigoAlmacen, ean, talla, nombre, familias, color, temporada,
                     object : APIResponseCallback<FilteredSearch> {
@@ -124,7 +124,7 @@ class StockSearch : AppCompatActivity() {
     }
 
     private fun getFamiliasAPI() {
-        RetrofitClient.getApiService().getFamilias(codigoAlmacen)
+        GestockApiFactory.getApi(this).getFamilias(codigoAlmacen)
             .enqueue(object : Callback<List<Familia>> {
                 override fun onResponse(call: Call<List<Familia>>, response: Response<List<Familia>>) {
                     if (response.isSuccessful) {
@@ -158,7 +158,7 @@ class StockSearch : AppCompatActivity() {
         familia: String, color: String, temporada: String,
         callback: APIResponseCallback<FilteredSearch>
     ) {
-        RetrofitClient.getApiService()
+        GestockApiFactory.getApi(this)
             .filteredSearch(almacen, ean, talla, nombre, familia, color, temporada)
             .enqueue(object : Callback<List<FilteredSearch>> {
                 override fun onResponse(call: Call<List<FilteredSearch>>, response: Response<List<FilteredSearch>>) {

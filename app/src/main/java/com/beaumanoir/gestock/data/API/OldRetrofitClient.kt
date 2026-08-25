@@ -4,24 +4,16 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import com.beaumanoir.gestock.R
 import com.beaumanoir.gestock.data.GestockApp
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.InputStream
-import java.security.KeyStore
-import java.security.cert.Certificate
-import java.security.cert.CertificateFactory
 import java.util.concurrent.TimeUnit
-import javax.net.ssl.SSLContext
-import javax.net.ssl.X509TrustManager
-import javax.net.ssl.TrustManagerFactory
 
-object RetrofitClient {
 
+object OldRetrofitClient {
     private const val BASE_URL = "https://gestock.ignorelist.com/gestock/"
 
     private class ApiKeyInterceptor : Interceptor {

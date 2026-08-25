@@ -4,7 +4,6 @@ import android.media.MediaPlayer
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
@@ -14,8 +13,8 @@ import androidx.appcompat.widget.AppCompatButton
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.beaumanoir.gestock.GestockApiFactory
 import com.beaumanoir.gestock.R
-import com.beaumanoir.gestock.data.API.RetrofitClient
 import com.beaumanoir.gestock.data.sqlite.ProductoAdapter
 import okhttp3.ResponseBody
 import org.json.JSONObject
@@ -167,7 +166,7 @@ class AñadirProductoCaja : AppCompatActivity(), ProductoAdapter.OnItemClickList
     }
 
     private fun getValuesfromProductoAPI(ean: String, callback: APIResponseCallback) {
-        RetrofitClient.getApiService().getProductValues(ean, codigoAlmacen)
+        GestockApiFactory.getApi(this).getProductValues(ean, codigoAlmacen)
             .enqueue(object : Callback<ProductValues> {
                 override fun onResponse(call: Call<ProductValues>, response: Response<ProductValues>) {
                     if (response.isSuccessful) {
@@ -195,7 +194,7 @@ class AñadirProductoCaja : AppCompatActivity(), ProductoAdapter.OnItemClickList
     }
 
     private fun addStockAPI(eans: List<String>) {
-        RetrofitClient.getApiService()
+        GestockApiFactory.getApi(this)
             .addStock(AddStockRequest(codigoAlmacen, idPalet, idCaja, eans))
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -228,7 +227,7 @@ class AñadirProductoCaja : AppCompatActivity(), ProductoAdapter.OnItemClickList
     }
 
     private fun updateCantidadCajaAPI() {
-        RetrofitClient.getApiService()
+        GestockApiFactory.getApi(this)
             .updateCantidadCaja(codigoAlmacen, idPalet, idCaja)
             .enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
