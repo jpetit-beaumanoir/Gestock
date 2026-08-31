@@ -19,7 +19,7 @@
         android:required="true" />
 
     <application
-        android:name=".data.GestockApp"
+        android:name=".GestockApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -37,29 +37,29 @@
             android:resource="@array/preloaded_fonts" />
 
         <activity
-            android:name="com.beaumanoir.gestock.data.LogIn"
+            android:name="com.beaumanoir.gestock.ui.login.LogIn"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.beaumanoir.gestock.data.StockSearch" />
+        <activity android:name="com.beaumanoir.gestock.ui.stock.StockSearch" />
         <activity
-            android:name="com.beaumanoir.gestock.data.AlmacenVirtualMainPalets"
+            android:name="com.beaumanoir.gestock.ui.palets.AlmacenVirtualMainPalets"
             android:windowSoftInputMode="adjustPan" />
-        <activity android:name="com.beaumanoir.gestock.data.AlmacenVirtualMainCajas" />
+        <activity android:name="com.beaumanoir.gestock.ui.cajas.AlmacenVirtualMainCajas" />
         <activity
-            android:name="com.beaumanoir.gestock.data.GestionCajasAlmacen"
-            android:windowSoftInputMode="adjustPan" />
-        <activity
-            android:name="com.beaumanoir.gestock.data.EliminarProductoCaja"
+            android:name="com.beaumanoir.gestock.ui.stock.GestionCajasAlmacen"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name="com.beaumanoir.gestock.data.AñadirProductoCaja"
+            android:name="com.beaumanoir.gestock.ui.cajas.EliminarProductoCaja"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name="com.beaumanoir.gestock.data.MoverProductosCaja"
+            android:name="com.beaumanoir.gestock.ui.cajas.AddProductoCaja"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name="com.beaumanoir.gestock.ui.cajas.MoverProductosCaja"
             android:windowSoftInputMode="adjustPan" />
     </application>
 
